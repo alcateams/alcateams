@@ -1,0 +1,37 @@
+name: Code Quality (Oxc)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Lint Backend (Oxlint)
+        working-directory: ./backend
+        run: npx oxlint@latest
+
+      - name: Format Check Backend (Oxfmt)
+        working-directory: ./backend
+        run: npx oxfmt@latest --check .
+
+      # - name: Lint Frontend (Oxlint)
+      #   working-directory: ./frontend
+      #   run: npx oxlint@latest
+
+      # - name: Format Check Frontend (Oxfmt)
+      #   working-directory: ./frontend
+      #   run: npx oxfmt@latest --check .
