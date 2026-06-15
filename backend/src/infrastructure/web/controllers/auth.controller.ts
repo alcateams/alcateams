@@ -7,7 +7,9 @@ import { rainbowClient } from "../../rainbow/rainbowClient";
 
 const registerSchema = z.object({
   email: z.string().email("Format d'email invalide"),
-  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  password: z
+    .string()
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
   pseudo: z.string().min(2, "Le pseudo doit contenir au moins 2 caractères"),
 });
 
@@ -48,13 +50,24 @@ export class AuthController {
       let rainbowUserId = "";
       try {
         // According to Rainbow SDK docs: sdk.admin.createUser(email, password, firstname, lastname, ... )
-        const rainbowUser = await sdk.admin.createUser(email, password, pseudo, pseudo, "", []);
+        const rainbowUser = await sdk.admin.createUser(
+          email,
+          password,
+          pseudo,
+          pseudo,
+          "",
+          [],
+        );
         rainbowUserId = rainbowUser.id;
       } catch (rainbowError: any) {
-        logger.error("[AuthController] Error creating Rainbow user:", rainbowError);
-        res
-          .status(502)
-          .json({ error: "Erreur lors de la création du compte de communication Rainbow." });
+        logger.error(
+          "[AuthController] Error creating Rainbow user:",
+          rainbowError,
+        );
+        res.status(502).json({
+          error:
+            "Erreur lors de la création du compte de communication Rainbow.",
+        });
         return;
       }
 
@@ -69,13 +82,17 @@ export class AuthController {
       });
 
       // Send success response
-      res.status(201).json({
-        message: "Inscription réussie avec succès. Vous pouvez maintenant vous connecter.",
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          pseudo: newUser.name,
-        },
+      req.logIn(newUser, (err) => {
+        if (err) {
+          logger.error("[AuthController] Session error after register:", err);
+          return res
+            .status(500)
+            .json({ error: "Une erreur interne est survenue." });
+        }
+        res.status(201).json({
+          message: "Inscription réussie avec succès.",
+          user: { id: newUser.id, email: newUser.email, pseudo: newUser.name },
+        });
       });
     } catch (error) {
       logger.error("[AuthController] Registration internal error:", error);
@@ -108,18 +125,37 @@ export class AuthController {
         return;
       }
 
-      res.status(200).json({
-        message: "Connexion réussie",
-        user: {
-          id: user.id,
-          email: user.email,
-          pseudo: user.name,
-        },
+      req.logIn(user, (err) => {
+        if (err) {
+          logger.error("[AuthController] Session error after login:", err);
+          return res.status(500).json({ error: "Une erreur interne est survenue." });
+        }
+        res.status(200).json({
+          message: "Connexion réussie",
+          user: { id: user.id, email: user.email, pseudo: user.name },
+        });
       });
     } catch (error) {
       logger.error("[AuthController] Login internal error:", error);
       res.status(500).json({ error: "Une erreur interne est survenue." });
     }
+  }
+
+  public logout(req: Request, res: Response): void {
+    req.logOut((err) => {
+      if (err) {
+        logger.error("[AuthController] Logout error:", err);
+        return res
+          .status(500)
+          .json({ error: "Erreur lors de la déconnexion." });
+      }
+      res.status(200).json({ message: "Déconnexion réussie." });
+    });
+  }
+
+  public me(req: Request, res: Response): void {
+    const user = req.user as { id: string; email: string; name: string };
+    res.status(200).json({ id: user.id, email: user.email, pseudo: user.name });
   }
 }
 

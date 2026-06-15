@@ -1,9 +1,15 @@
 import passport from "passport";
-import { Strategy as OpenIDConnectStrategy, type Profile } from "passport-openidconnect";
+import {
+  Strategy as OpenIDConnectStrategy,
+  type Profile,
+} from "passport-openidconnect";
+import { prisma } from "../infrastructure/database/prisma.client";
 
-// Dummy logic to fix compilation for now
-const findOrCreateRainbowUser = async (profile: Profile) => ({ id: "dummy" });
-const findUserById = async (id: string) => ({ id: "dummy" });
+const findUserById = async (id: string) =>
+  prisma.user.findUnique({ where: { id } });
+
+// OAuth flow (Sprint 1 not required — placeholder only)
+const findOrCreateRainbowUser = async (_profile: Profile) => null;
 
 export const configurePassport = () => {
   passport.use(
@@ -11,10 +17,14 @@ export const configurePassport = () => {
       {
         issuer: process.env.RAINBOW_ISSUER_URL || "https://openrainbow.com",
         authorizationURL:
-          process.env.RAINBOW_ISSUER_URL + "/api/rainbow/authentication/v1.0/oauth/authorize",
-        tokenURL: process.env.RAINBOW_ISSUER_URL + "/api/rainbow/authentication/v1.0/oauth/token",
+          process.env.RAINBOW_ISSUER_URL +
+          "/api/rainbow/authentication/v1.0/oauth/authorize",
+        tokenURL:
+          process.env.RAINBOW_ISSUER_URL +
+          "/api/rainbow/authentication/v1.0/oauth/token",
         userInfoURL:
-          process.env.RAINBOW_ISSUER_URL + "/api/rainbow/authentication/v1.0/oauth/userinfo",
+          process.env.RAINBOW_ISSUER_URL +
+          "/api/rainbow/authentication/v1.0/oauth/userinfo",
 
         clientID: process.env.OPENRAINBOW_APPLICATION_ID as string,
         clientSecret: process.env.OPENRAINBOW_APPLICATION_SECRET as string,
@@ -22,7 +32,7 @@ export const configurePassport = () => {
 
         scope: ["openid", "profile", "email"],
       },
-      async (issuer: string, profile: Profile, done: any) => {
+      async (_issuer: string, profile: Profile, done: any) => {
         try {
           const user = await findOrCreateRainbowUser(profile);
           return done(null, user);

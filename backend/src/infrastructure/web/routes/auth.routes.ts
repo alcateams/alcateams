@@ -1,6 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authController } from "../controllers/auth.controller";
+import { requireAuth } from "../../../middlewares/requireAuth.middleware";
 
 const router = Router();
 
@@ -19,4 +20,9 @@ router.post("/register", authController.register.bind(authController));
 // US-012: Connexion (Login)
 router.post("/login", authController.login.bind(authController));
 
+// US-012: Déconnexion (Logout)
+router.post("/logout", authController.logout.bind(authController));
+
+// US-014: Consulter mon profil (View profile)
+router.get("/me", requireAuth, authController.me.bind(authController));
 export default router;
