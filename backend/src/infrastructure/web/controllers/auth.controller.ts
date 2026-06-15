@@ -24,7 +24,7 @@ export class AuthController {
       if (!result.success) {
         res.status(400).json({
           error: "Format de données invalide",
-          details: result.error.errors.map((e) => e.message),
+          details: result.error.issues.map((issue) => issue.message),
         });
         return;
       }
