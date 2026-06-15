@@ -4,8 +4,6 @@ import session from "express-session";
 import helmet from "helmet";
 import passport from "passport";
 
-import { test } from "./infrastructure/rainbow/user";
-
 import { configurePassport } from "./config/passport.config";
 import authRoutes from "./infrastructure/web/routes/auth.routes";
 import { errorHandler } from "./middlewares/errorHandler.middleware";
@@ -42,11 +40,6 @@ app.use(
 configurePassport();
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.get("/", (req, res) => {
-  test();
-  res.send("Hello World!");
-});
 
 // app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
