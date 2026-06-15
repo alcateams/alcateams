@@ -52,7 +52,9 @@ export class AuthController {
         rainbowUserId = rainbowUser.id;
       } catch (rainbowError: any) {
         logger.error("[AuthController] Error creating Rainbow user:", rainbowError);
-        res.status(502).json({ error: "Erreur lors de la création du compte de communication Rainbow." });
+        res
+          .status(502)
+          .json({ error: "Erreur lors de la création du compte de communication Rainbow." });
         return;
       }
 

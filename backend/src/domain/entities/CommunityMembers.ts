@@ -1,7 +1,7 @@
 export enum GlobalRole {
-  ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR',
-  MEMBER = 'MEMBER'
+  ADMIN = "ADMIN",
+  MODERATOR = "MODERATOR",
+  MEMBER = "MEMBER",
 }
 
 export class CommunityMember {
@@ -11,7 +11,7 @@ export class CommunityMember {
     public readonly communityId: string,
     public role: GlobalRole,
     public warningCount: number,
-    public readonly joinedAt: Date
+    public readonly joinedAt: Date,
   ) {}
 
   // Business logic: Encapsulating the warning behavior

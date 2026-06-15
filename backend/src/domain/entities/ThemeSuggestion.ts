@@ -1,7 +1,7 @@
 export enum SuggestionStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED'
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 export class ThemeSuggestion {
@@ -11,7 +11,7 @@ export class ThemeSuggestion {
     public status: SuggestionStatus,
     public readonly userId: string,
     public readonly communityId: string,
-    public readonly createdAt: Date
+    public readonly createdAt: Date,
   ) {}
 
   approve() {

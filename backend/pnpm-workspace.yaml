@@ -1,7 +1,7 @@
 blockExoticSubdeps: false
 
 allowBuilds:
-  '@prisma/engines': true
+  "@prisma/engines": true
   bcrypt: true
   bufferutil: true
   core-js: true

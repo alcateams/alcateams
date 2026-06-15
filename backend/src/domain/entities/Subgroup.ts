@@ -5,6 +5,6 @@ export class Subgroup {
     public theme: string | null,
     public readonly communityId: string,
     public readonly rainbowBubbleId: string,
-    public readonly createdAt: Date
+    public readonly createdAt: Date,
   ) {}
 }

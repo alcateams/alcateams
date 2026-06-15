@@ -4,7 +4,7 @@ export class User {
     public email: string,
     public name: string,
     public readonly rainbowUserId: string,
-    public readonly createdAt: Date
+    public readonly createdAt: Date,
   ) {}
 
   // Example of business logic inside the entity

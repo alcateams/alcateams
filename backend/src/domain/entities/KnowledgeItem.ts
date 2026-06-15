@@ -9,7 +9,7 @@ export class KnowledgeItem {
     public isPinned: boolean,
     public lastIndexedAt: Date | null,
     public readonly createdAt: Date,
-    public updatedAt: Date
+    public updatedAt: Date,
   ) {}
 
   markAsIndexed() {

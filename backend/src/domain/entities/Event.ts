@@ -6,7 +6,7 @@ export class Event {
     public startTime: Date,
     public endTime: Date,
     public conferenceLink: string,
-    private attendeeIds: Set<string> = new Set() // Domain representation of the join table
+    private attendeeIds: Set<string> = new Set(), // Domain representation of the join table
   ) {}
 
   addAttendee(userId: string) {
