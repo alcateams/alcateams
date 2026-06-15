@@ -1,0 +1,11 @@
+blockExoticSubdeps: false
+
+allowBuilds:
+  '@prisma/engines': true
+  bcrypt: true
+  bufferutil: true
+  core-js: true
+  deasync: true
+  esbuild: true
+  prisma: true
+  ws: true
