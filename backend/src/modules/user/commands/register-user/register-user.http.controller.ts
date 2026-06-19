@@ -3,7 +3,7 @@ import { RegisterUserService } from "./register-user.service";
 import { registerUserDto } from "./register-user.request.dto";
 import { UserRepository } from "../../database/user.repository";
 import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
-import { UserAlreadyExistsError } from "../../domain/user.errors";
+import { PseudoAlreadyTakenError, UserAlreadyExistsError } from "../../domain/user.errors";
 
 const registerUserService = new RegisterUserService(
   new UserRepository(),
@@ -22,7 +22,7 @@ export const registerHandler = async (req: Request, res: Response) => {
     const result = await registerUserService.execute(validation.data);
     res.status(201).json(result);
   } catch (error) {
-    if (error instanceof UserAlreadyExistsError) {
+    if (error instanceof UserAlreadyExistsError || error instanceof PseudoAlreadyTakenError) {
       res.status(409).json({ error: error.message });
       return;
     }

@@ -1,4 +1,4 @@
-import { UserAlreadyExistsError } from "../../domain/user.errors";
+import { PseudoAlreadyTakenError, UserAlreadyExistsError } from "../../domain/user.errors";
 import { User } from "../../domain/user.entity";
 import type { UserRepositoryPort } from "../../database/user.repository.port";
 import type { IdentityProvider } from "../../../auth/identity-provider.port";
@@ -22,6 +22,7 @@ export class RegisterUserService {
 
   async execute(input: RegisterUserInput): Promise<RegisterUserResult> {
     await this.ensureEmailIsAvailable(input.email);
+    await this.ensurePseudoIsAvailable(input.pseudo);
 
     const identityId = await this.identityProvider.createAccount(
       input.email,
@@ -44,5 +45,10 @@ export class RegisterUserService {
   private async ensureEmailIsAvailable(email: string): Promise<void> {
     const isAvailable = await this.identityProvider.isEmailAvailable(email);
     if (!isAvailable) throw new UserAlreadyExistsError();
+  }
+
+  private async ensurePseudoIsAvailable(pseudo: string): Promise<void> {
+    const existingUser = await this.userRepository.findByPseudo(pseudo);
+    if (existingUser) throw new PseudoAlreadyTakenError();
   }
 }
