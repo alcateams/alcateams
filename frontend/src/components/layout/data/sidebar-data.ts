@@ -13,6 +13,7 @@ import {
   UserCog,
   UserX,
   Users,
+  Users2,
   MessagesSquare,
   ShieldCheck,
   AudioWaveform,
@@ -58,6 +59,11 @@ export const sidebarData: SidebarData = {
           title: 'Users',
           url: '/users',
           icon: Users,
+        },
+        {
+          title: 'Communautés',
+          url: '/communities',
+          icon: Users2,
         },
         /*
         {
