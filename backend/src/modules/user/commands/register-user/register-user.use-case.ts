@@ -1,0 +1,71 @@
+import { PseudoAlreadyTakenError, UserAlreadyExistsError } from "../../domain/user.errors";
+import { User } from "../../domain/user.entity";
+import type { UserRepositoryPort } from "../../database/user.repository.port";
+import type { IdentityProvider } from "../../../auth/identity-provider.port";
+
+interface RegisterUserInput {
+  email: string;
+  password: string;
+  pseudo: string;
+}
+
+interface RegisterUserResult {
+  token: string;
+  user: User;
+}
+
+export class RegisterUserUseCase {
+  constructor(
+    private readonly userRepository: UserRepositoryPort,
+    private readonly identityProvider: IdentityProvider,
+  ) {}
+
+  async execute(input: RegisterUserInput): Promise<RegisterUserResult> {
+    await this.ensureEmailIsAvailable(input.email);
+    await this.ensurePseudoIsAvailable(input.pseudo);
+
+    const identityId = await this.identityProvider.createAccount(
+      input.email,
+      input.password,
+      input.pseudo,
+    );
+
+    const user = await this.persistUserOrRollback(identityId, input);
+
+    const token = await this.identityProvider.loginAndGetToken(input.email, input.password);
+
+    return { token, user };
+  }
+
+  /**
+   * Persists the local user. If persistence fails (e.g. a unique-constraint race),
+   * the Rainbow account we just created would be orphaned, so we delete it before
+   * propagating the error to keep both systems consistent.
+   */
+  private async persistUserOrRollback(identityId: string, input: RegisterUserInput): Promise<User> {
+    const newUser = User.create({
+      id: identityId,
+      email: input.email,
+      pseudo: input.pseudo,
+    });
+
+    try {
+      return await this.userRepository.saveUser(newUser);
+    } catch (error) {
+      await this.identityProvider.deleteAccount(identityId).catch(() => {
+        // Swallow rollback failures so the original persistence error is surfaced.
+      });
+      throw error;
+    }
+  }
+
+  private async ensureEmailIsAvailable(email: string): Promise<void> {
+    const isAvailable = await this.identityProvider.isEmailAvailable(email);
+    if (!isAvailable) throw new UserAlreadyExistsError();
+  }
+
+  private async ensurePseudoIsAvailable(pseudo: string): Promise<void> {
+    const existingUser = await this.userRepository.findByPseudo(pseudo);
+    if (existingUser) throw new PseudoAlreadyTakenError();
+  }
+}

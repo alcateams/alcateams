@@ -6,6 +6,12 @@ To install dependencies:
 npm install
 ```
 
+To apply migrations:
+
+```bash
+npx prisma migrate dev
+```
+
 To run:
 
 ```bash
