@@ -11,7 +11,7 @@ const loginUserRequestDto = z.object({
   password: z.string().min(1),
 });
 
-const loginUserService = new LoginUserUseCase(new UserRepository(), new RainbowIdentityProvider()); // TODO: May be use dependency injection
+const loginUserUseCase = new LoginUserUseCase(new UserRepository(), new RainbowIdentityProvider()); // TODO: May be use dependency injection
 
 export const loginHandler = async (req: Request, res: Response) => {
   const validation = loginUserRequestDto.safeParse(req.body);
@@ -22,7 +22,7 @@ export const loginHandler = async (req: Request, res: Response) => {
   }
 
   try {
-    const { token, user } = await loginUserService.execute(validation.data);
+    const { token, user } = await loginUserUseCase.execute(validation.data);
     res.status(200).json({ token, user: toUserResponse(user) });
   } catch (error) {
     if (error instanceof InvalidCredentialsError) {
