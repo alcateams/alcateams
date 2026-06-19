@@ -11,10 +11,52 @@ datasource db {
 }
 
 model User {
-  id        String   @id
-  email     String   @unique
-  pseudo    String   @unique
-  bio       String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String            @id
+  email       String            @unique
+  pseudo      String            @unique
+  bio         String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  communities CommunityMember[]
+}
+
+enum CommunityRole {
+  MODERATOR
+  MEMBER
+}
+
+model Community {
+  id          String            @id @default(uuid())
+  name        String            @unique
+  description String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  subGroups   SubGroup[]
+  members     CommunityMember[]
+}
+
+// A thematic sub-group ("sous-groupe") of a community, backed by one Rainbow bubble
+// (the "bulle": a place of exchange around a precise subject).
+model SubGroup {
+  id              String    @id @default(uuid())
+  communityId     String
+  name            String
+  theme           String
+  rainbowBubbleId String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, name])
+}
+
+model CommunityMember {
+  communityId String
+  userId      String
+  role        CommunityRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+  community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([communityId, userId])
 }
