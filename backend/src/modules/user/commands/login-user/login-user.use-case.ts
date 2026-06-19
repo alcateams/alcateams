@@ -14,7 +14,7 @@ interface LoginUserResult {
   user: User;
 }
 
-export class LoginUserService {
+export class LoginUserUseCase {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly identityProvider: IdentityProvider,

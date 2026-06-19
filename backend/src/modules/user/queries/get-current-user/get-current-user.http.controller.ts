@@ -1,10 +1,10 @@
 import { type Request, type Response } from "express";
-import { GetCurrentUserService } from "./get-current-user.service";
+import { GetCurrentUserUseCase } from "./get-current-user.use-case.ts";
 import { UserRepository } from "../../database/user.repository";
 import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
 import { TokenValidationFailedError } from "../../../auth/auth.errors";
 
-const getCurrentUserService = new GetCurrentUserService(
+const getCurrentUserService = new GetCurrentUserUseCase(
   new UserRepository(),
   new RainbowIdentityProvider(),
 );

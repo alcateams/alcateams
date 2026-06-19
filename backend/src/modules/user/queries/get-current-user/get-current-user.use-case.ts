@@ -3,7 +3,7 @@ import type { User } from "../../domain/user.entity";
 import type { UserRepositoryPort } from "../../database/user.repository.port";
 import type { IdentityProvider } from "../../../auth/identity-provider.port";
 
-export class GetCurrentUserService {
+export class GetCurrentUserUseCase {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly identityProvider: IdentityProvider,

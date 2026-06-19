@@ -1,19 +1,19 @@
 import { type Request, type Response } from "express";
 import { z } from "zod";
-import { LoginUserService } from "./login-user.service";
+import { LoginUserUseCase } from "./login-user.use-case.ts";
 import { UserRepository } from "../../database/user.repository";
 import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
 import { InvalidCredentialsError } from "../../domain/user.errors";
 
-const loginUserRequestSchema = z.object({
+const loginUserRequestDto = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
 
-const loginUserService = new LoginUserService(new UserRepository(), new RainbowIdentityProvider()); // TODO: May be use dependency injection
+const loginUserService = new LoginUserUseCase(new UserRepository(), new RainbowIdentityProvider()); // TODO: May be use dependency injection
 
 export const loginHandler = async (req: Request, res: Response) => {
-  const validation = loginUserRequestSchema.safeParse(req.body);
+  const validation = loginUserRequestDto.safeParse(req.body);
 
   if (!validation.success) {
     res.status(400).json({ error: validation.error.flatten().fieldErrors });

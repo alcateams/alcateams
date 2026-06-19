@@ -14,7 +14,7 @@ interface RegisterUserResult {
   user: User;
 }
 
-export class RegisterUserService {
+export class RegisterUserUseCase {
   constructor(
     private readonly userRepository: UserRepositoryPort,
     private readonly identityProvider: IdentityProvider,
