@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { CommunityProps, CreateCommunityProps, ThemeProps } from "./community.types";
+import type { CommunityProps, CreateCommunityProps, SubGroupProps } from "./community.types";
 
 export class Community {
   constructor(private readonly props: CommunityProps) {}
@@ -10,10 +10,11 @@ export class Community {
       id: crypto.randomUUID(),
       name: props.name,
       description: props.description,
-      themes: props.themes.map((theme) => ({
+      subGroups: props.subGroups.map((subGroup) => ({
         id: crypto.randomUUID(),
-        name: theme.name,
-        rainbowBubbleId: theme.rainbowBubbleId,
+        name: subGroup.name,
+        theme: subGroup.theme,
+        rainbowBubbleId: subGroup.rainbowBubbleId,
         createdAt: now,
         updatedAt: now,
       })),
@@ -34,8 +35,8 @@ export class Community {
     return this.props.description;
   }
 
-  get themes(): readonly ThemeProps[] {
-    return this.props.themes;
+  get subGroups(): readonly SubGroupProps[] {
+    return this.props.subGroups;
   }
 
   get createdAt(): Date {
