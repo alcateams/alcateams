@@ -1,26 +1,24 @@
-FROM node:lts-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 
-RUN npm install -g pnpm@11
+COPY package.json package-lock.json ./
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 COPY . .
 
-RUN pnpm exec prisma generate
-RUN pnpm run lint
-RUN pnpm exec tsc --noEmit
-RUN pnpm run build
+RUN bunx prisma generate
+RUN bun lint # check for errors
+RUN bun tsc --noEmit # type check
+RUN bun build ./src/index.ts --outdir ./dist --target=bun
 
-FROM node:lts-alpine AS runner
+FROM oven/bun:1-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN npm install -g pnpm@11
+COPY package.json package-lock.json ./
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+RUN bun install --frozen-lockfile --production
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
@@ -28,4 +26,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-CMD ["node", "dist/index.js"]
+CMD ["bun", "run", "dist/index.js"]
