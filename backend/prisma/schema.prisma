@@ -31,15 +31,17 @@ model Community {
   description String
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  themes      Theme[]
+  subGroups   SubGroup[]
   members     CommunityMember[]
 }
 
-// A "bulle": one Rainbow bubble acting as a place of exchange within a community.
-model Theme {
+// A thematic sub-group ("sous-groupe") of a community, backed by one Rainbow bubble
+// (the "bulle": a place of exchange around a precise subject).
+model SubGroup {
   id              String    @id @default(uuid())
   communityId     String
   name            String
+  theme           String
   rainbowBubbleId String    @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

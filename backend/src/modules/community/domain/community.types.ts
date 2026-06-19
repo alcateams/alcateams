@@ -1,8 +1,9 @@
 export type CommunityRole = "MODERATOR" | "MEMBER";
 
-export interface ThemeProps {
+export interface SubGroupProps {
   id: string;
   name: string;
+  theme: string;
   rainbowBubbleId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -12,18 +13,19 @@ export interface CommunityProps {
   id: string;
   name: string;
   description: string;
-  themes: ThemeProps[];
+  subGroups: SubGroupProps[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface CreateThemeProps {
+export interface CreateSubGroupProps {
   name: string;
+  theme: string;
   rainbowBubbleId: string;
 }
 
 export interface CreateCommunityProps {
   name: string;
   description: string;
-  themes: CreateThemeProps[];
+  subGroups: CreateSubGroupProps[];
 }
