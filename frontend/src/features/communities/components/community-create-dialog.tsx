@@ -36,7 +36,7 @@ type CommunityCreateDialogProps = {
 const emptyForm: CreateCommunityForm = {
   name: '',
   description: '',
-  themes: [{ name: '' }],
+  subGroups: [{ name: '', theme: '' }],
 }
 
 export function CommunityCreateDialog({
@@ -49,7 +49,7 @@ export function CommunityCreateDialog({
   })
 
   const { fields, append, remove } = useFieldArray({
-    name: 'themes',
+    name: 'subGroups',
     control: form.control,
   })
 
@@ -79,8 +79,8 @@ export function CommunityCreateDialog({
             <Users2 /> Créer une communauté
           </DialogTitle>
           <DialogDescription>
-            Rassemblez des gens autour d'un sujet. Chaque thème crée une bulle
-            d'échange.
+            Rassemblez des gens autour d'un sujet. Chaque sous-groupe crée une
+            bulle d'échange.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -122,41 +122,60 @@ export function CommunityCreateDialog({
                 </FormItem>
               )}
             />
-            <div className='space-y-2'>
-              <FormLabel>Thèmes</FormLabel>
+            <div className='space-y-3'>
+              <FormLabel>Sous-groupes</FormLabel>
               {fields.map((arrayField, index) => (
-                <FormField
-                  control={form.control}
+                <div
                   key={arrayField.id}
-                  name={`themes.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className='flex items-center gap-2'>
-                          <Input placeholder='ex : Matériel' {...field} />
-                          <Button
-                            type='button'
-                            variant='outline'
-                            size='icon'
-                            disabled={fields.length <= 1}
-                            onClick={() => remove(index)}
-                          >
-                            <Trash2 />
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  className='flex items-start gap-2 rounded-md border p-3'
+                >
+                  <div className='grid flex-1 gap-2 sm:grid-cols-2'>
+                    <FormField
+                      control={form.control}
+                      name={`subGroups.${index}.name`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              placeholder='Nom du sous-groupe'
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`subGroups.${index}.theme`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder='Thème' {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='icon'
+                    disabled={fields.length <= 1}
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
               ))}
               <Button
                 type='button'
                 variant='outline'
                 size='sm'
-                onClick={() => append({ name: '' })}
+                onClick={() => append({ name: '', theme: '' })}
               >
-                <Plus /> Ajouter un thème
+                <Plus /> Ajouter un sous-groupe
               </Button>
             </div>
           </form>

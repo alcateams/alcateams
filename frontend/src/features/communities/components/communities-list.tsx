@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { Folder, Hash } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -28,15 +28,27 @@ export function CommunitiesList() {
       {communities.map((community) => (
         <Card key={community.id}>
           <CardHeader>
-            <CardTitle>{community.name}</CardTitle>
+            <CardTitle className='flex items-center gap-2'>
+              <Folder className='size-4' /> {community.name}
+            </CardTitle>
             <CardDescription>{community.description}</CardDescription>
           </CardHeader>
-          <CardContent className='flex flex-wrap gap-2'>
-            {community.themes.map((theme) => (
-              <Badge key={theme.id} variant='secondary'>
-                {theme.name}
-              </Badge>
-            ))}
+          <CardContent>
+            {/* Arborescence: the community's sub-groups shown as child nodes. */}
+            <ul className='ms-2 border-s ps-4'>
+              {community.subGroups.map((subGroup) => (
+                <li
+                  key={subGroup.id}
+                  className='flex items-center gap-2 py-1 text-sm'
+                >
+                  <Hash className='size-3.5 text-muted-foreground' />
+                  <span className='font-medium'>{subGroup.name}</span>
+                  <span className='text-muted-foreground'>
+                    · {subGroup.theme}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       ))}

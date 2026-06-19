@@ -9,14 +9,15 @@ export type AuthResponse = {
   user: User
 }
 
-export type Theme = {
+export type SubGroup = {
   id: string
   name: string
+  theme: string
 }
 
 export type Community = {
   id: string
   name: string
   description: string
-  themes: Theme[]
+  subGroups: SubGroup[]
 }
