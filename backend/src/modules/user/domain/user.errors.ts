@@ -18,3 +18,10 @@ export class InvalidCredentialsError extends Error {
     this.name = "InvalidCredentialsError";
   }
 }
+
+export class UserNotFoundError extends Error {
+  constructor() {
+    super("Utilisateur introuvable");
+    this.name = "UserNotFoundError";
+  }
+}

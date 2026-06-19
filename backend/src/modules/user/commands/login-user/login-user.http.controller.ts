@@ -4,6 +4,7 @@ import { LoginUserUseCase } from "./login-user.use-case.ts";
 import { UserRepository } from "../../database/user.repository";
 import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
 import { InvalidCredentialsError } from "../../domain/user.errors";
+import { toUserResponse } from "../../user.response";
 
 const loginUserRequestDto = z.object({
   email: z.string().email(),
@@ -21,8 +22,8 @@ export const loginHandler = async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await loginUserService.execute(validation.data);
-    res.status(200).json(result);
+    const { token, user } = await loginUserService.execute(validation.data);
+    res.status(200).json({ token, user: toUserResponse(user) });
   } catch (error) {
     if (error instanceof InvalidCredentialsError) {
       res.status(401).json({ error: error.message });

@@ -1,30 +1,25 @@
 import { type Request, type Response } from "express";
 import { GetCurrentUserUseCase } from "./get-current-user.use-case.ts";
 import { UserRepository } from "../../database/user.repository";
-import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
-import { TokenValidationFailedError } from "../../../auth/auth.errors";
+import { UserNotFoundError } from "../../domain/user.errors";
+import { toUserResponse } from "../../user.response";
 
-const getCurrentUserService = new GetCurrentUserUseCase(
-  new UserRepository(),
-  new RainbowIdentityProvider(),
-);
+const getCurrentUserUseCase = new GetCurrentUserUseCase(new UserRepository());
 
 export const getCurrentUserHandler = async (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  // `requireAuth` guarantees `identityId` is set; guard defensively in case it is mounted without it.
+  const identityId = req.identityId;
+  if (!identityId) {
     res.status(401).json({ error: "Token manquant" });
     return;
   }
 
-  const token = authHeader.slice(7);
-
   try {
-    const user = await getCurrentUserService.execute(token);
-    res.status(200).json(user);
+    const user = await getCurrentUserUseCase.execute(identityId);
+    res.status(200).json(toUserResponse(user));
   } catch (error) {
-    if (error instanceof TokenValidationFailedError) {
-      res.status(401).json({ error: error.message });
+    if (error instanceof UserNotFoundError) {
+      res.status(404).json({ error: error.message });
       return;
     }
     console.error("[me] erreur inattendue :", error);
