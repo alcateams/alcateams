@@ -17,7 +17,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
           ...toPersistence(community),
           members: { create: { userId: creatorId, role: "MODERATOR" } },
         },
-        include: { themes: true },
+        include: { subGroups: true },
       });
       return toEntity(record);
     } catch (error) {
@@ -28,7 +28,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
   async findByName(name: string): Promise<Community | null> {
     const record = await database.community.findUnique({
       where: { name },
-      include: { themes: true },
+      include: { subGroups: true },
     });
     return record ? toEntity(record) : null;
   }
@@ -36,7 +36,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
   async listForUser(userId: string): Promise<Community[]> {
     const records = await database.community.findMany({
       where: { members: { some: { userId } } },
-      include: { themes: true },
+      include: { subGroups: true },
       orderBy: { createdAt: "desc" },
     });
     return records.map(toEntity);
