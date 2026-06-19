@@ -21,7 +21,7 @@ export function SignIn() {
           <CardDescription>
             Enter your email and password below to <br />
             log into your account. <br />
-            Pas encore de compte ?{' '}
+            Don't have an account yet? ?{' '}
             <Link
               to='/sign-up'
               className='underline underline-offset-4 hover:text-primary'
