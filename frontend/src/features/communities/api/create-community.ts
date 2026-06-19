@@ -13,29 +13,25 @@ export const createCommunitySchema = z.object({
     .string()
     .min(1, 'Veuillez saisir une description')
     .max(500, 'La description ne peut pas dépasser 500 caractères'),
-  themes: z
+  subGroups: z
     .array(
       z.object({
         name: z
+          .string()
+          .min(2, 'Le nom doit faire au moins 2 caractères')
+          .max(50, 'Le nom ne peut pas dépasser 50 caractères'),
+        theme: z
           .string()
           .min(2, 'Le thème doit faire au moins 2 caractères')
           .max(50, 'Le thème ne peut pas dépasser 50 caractères'),
       })
     )
-    .min(1, 'Au moins un thème est requis'),
+    .min(1, 'Au moins un sous-groupe est requis'),
 })
 
 export type CreateCommunityForm = z.infer<typeof createCommunitySchema>
 
-type CreateCommunityPayload = {
-  name: string
-  description: string
-  themes: string[]
-}
-
-const createCommunity = (
-  payload: CreateCommunityPayload
-): Promise<Community> => {
+const createCommunity = (payload: CreateCommunityForm): Promise<Community> => {
   return api.post('/api/communities', payload)
 }
 
@@ -49,12 +45,7 @@ export const useCreateCommunity = ({
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ name, description, themes }: CreateCommunityForm) =>
-      createCommunity({
-        name,
-        description,
-        themes: themes.map((theme) => theme.name),
-      }),
+    mutationFn: createCommunity,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: myCommunitiesQueryKey })
       onSuccess?.(data)
