@@ -1,16 +1,12 @@
-import { PrismaPg } from "@prisma/adapter-pg";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { type Request, type Response } from "express";
-import { PrismaClient } from "./generated/prisma/client";
+import { database } from "./lib/database";
+import { userRouter } from "./modules/user/user.router";
 
 dotenv.config();
 
-const connectionString = `${process.env.DATABASE_URL}`;
-
 const app = express();
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
@@ -31,6 +27,8 @@ app.get("/api/users/count", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erreur de connexion à la base de données" });
   }
 });
+
+app.use("/api/users", userRouter);
 
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
