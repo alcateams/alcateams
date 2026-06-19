@@ -1,9 +1,10 @@
 import { type Request, type Response } from "express";
-import { RegisterUserUseCase } from "./register-user-use.case.ts";
+import { RegisterUserUseCase } from "./register-user.use-case.ts";
 import { registerUserDto } from "./register-user.request.dto";
 import { UserRepository } from "../../database/user.repository";
 import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
 import { PseudoAlreadyTakenError, UserAlreadyExistsError } from "../../domain/user.errors";
+import { toUserResponse } from "../../user.response";
 
 const registerUserUseCase = new RegisterUserUseCase(
   new UserRepository(),
@@ -19,8 +20,8 @@ export const registerHandler = async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await registerUserUseCase.execute(validation.data);
-    res.status(201).json(result);
+    const { token, user } = await registerUserUseCase.execute(validation.data);
+    res.status(201).json({ token, user: toUserResponse(user) });
   } catch (error) {
     if (error instanceof UserAlreadyExistsError || error instanceof PseudoAlreadyTakenError) {
       res.status(409).json({ error: error.message });

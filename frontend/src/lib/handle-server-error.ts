@@ -17,8 +17,25 @@ export function handleServerError(error: unknown) {
   }
 
   if (error instanceof AxiosError) {
-    errMsg = error.response?.data.error ?? error.response?.data.title ?? error.message
+    const data = error.response?.data
+    errMsg = normalizeServerError(data?.error) ?? data?.title ?? error.message
   }
 
   toast.error(errMsg)
+}
+
+/**
+ * The API returns `error` either as a string (domain errors) or as a field→messages
+ * map (validation errors). Flatten the map into a readable string so toasts never
+ * render "[object Object]".
+ */
+function normalizeServerError(error: unknown): string | undefined {
+  if (typeof error === 'string') return error
+  if (error && typeof error === 'object') {
+    const messages = Object.values(error as Record<string, unknown>)
+      .flat()
+      .filter((message): message is string => typeof message === 'string')
+    if (messages.length > 0) return messages.join(' ')
+  }
+  return undefined
 }

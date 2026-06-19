@@ -1,6 +1,6 @@
 import type { User as PrismaUser } from "../../../generated/prisma/client";
-import { User } from "./user.entity";
-import type { UserProps } from "./user.types";
+import { User } from "../domain/user.entity";
+import type { UserProps } from "../domain/user.types";
 
 export function toEntity(record: PrismaUser): User {
   return new User({

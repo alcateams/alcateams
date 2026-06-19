@@ -4,6 +4,18 @@ import { type User } from '@/types/api'
 
 const ACCESS_TOKEN = 'alcateams_token'
 
+function readTokenFromCookie(): string {
+  const cookieState = getCookie(ACCESS_TOKEN)
+  if (!cookieState) return ''
+  try {
+    return JSON.parse(cookieState)
+  } catch {
+    // Malformed cookie: drop it instead of crashing app boot.
+    removeCookie(ACCESS_TOKEN)
+    return ''
+  }
+}
+
 interface AuthState {
   auth: {
     user: User | null
@@ -16,8 +28,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>()((set) => {
-  const cookieState = getCookie(ACCESS_TOKEN)
-  const initToken = cookieState ? JSON.parse(cookieState) : ''
+  const initToken = readTokenFromCookie()
   return {
     auth: {
       user: null,

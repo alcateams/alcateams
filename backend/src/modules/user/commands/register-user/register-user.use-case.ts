@@ -30,16 +30,33 @@ export class RegisterUserUseCase {
       input.pseudo,
     );
 
+    const user = await this.persistUserOrRollback(identityId, input);
+
+    const token = await this.identityProvider.loginAndGetToken(input.email, input.password);
+
+    return { token, user };
+  }
+
+  /**
+   * Persists the local user. If persistence fails (e.g. a unique-constraint race),
+   * the Rainbow account we just created would be orphaned, so we delete it before
+   * propagating the error to keep both systems consistent.
+   */
+  private async persistUserOrRollback(identityId: string, input: RegisterUserInput): Promise<User> {
     const newUser = User.create({
       id: identityId,
       email: input.email,
       pseudo: input.pseudo,
     });
-    const user = await this.userRepository.saveUser(newUser);
 
-    const token = await this.identityProvider.loginAndGetToken(input.email, input.password);
-
-    return { token, user };
+    try {
+      return await this.userRepository.saveUser(newUser);
+    } catch (error) {
+      await this.identityProvider.deleteAccount(identityId).catch(() => {
+        // Swallow rollback failures so the original persistence error is surfaced.
+      });
+      throw error;
+    }
   }
 
   private async ensureEmailIsAvailable(email: string): Promise<void> {
