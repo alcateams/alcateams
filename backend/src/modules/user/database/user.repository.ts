@@ -14,6 +14,11 @@ export class UserRepository implements UserRepositoryPort {
     return record ? toEntity(record) : null;
   }
 
+  async findByPseudo(pseudo: string): Promise<User | null> {
+    const record = await database.user.findUnique({ where: { pseudo } });
+    return record ? toEntity(record) : null;
+  }
+
   async findById(id: string): Promise<User | null> {
     const record = await database.user.findUnique({ where: { id } });
     return record ? toEntity(record) : null;
