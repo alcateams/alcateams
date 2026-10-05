@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from '@tanstack/react-router'
 import { showSubmittedData } from '@/lib/show-submitted-data'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -15,14 +14,9 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useCurrentUser } from '@/features/auth/api/current-user'
+import { useEffect } from 'react'
 
 const profileFormSchema = z.object({
   username: z
@@ -35,7 +29,7 @@ const profileFormSchema = z.object({
         ? 'Please select an email to display.'
         : undefined,
   }),
-  bio: z.string().max(160).min(4),
+  bio: z.string().max(160).optional().or(z.literal('')),
   urls: z
     .array(
       z.object({
@@ -49,19 +43,30 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 // This can come from your database or API.
 const defaultValues: Partial<ProfileFormValues> = {
-  bio: 'I own a computer.',
-  urls: [
-    { value: 'https://shadcn.com' },
-    { value: 'http://twitter.com/shadcn' },
-  ],
+  username: '',
+  email: '',
+  bio: '',
+  urls: [],
 }
 
 export function ProfileForm() {
+  const { data: user } = useCurrentUser()
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
     mode: 'onChange',
   })
+
+  useEffect(() => {
+    if (!user) return
+
+    form.reset({
+      username: user.pseudo,
+      email: user.email,
+      bio: user.bio || '',
+      urls:[],
+    })
+  }, [form, user])
 
   const { fields, append } = useFieldArray({
     name: 'urls',
@@ -97,21 +102,11 @@ export function ProfileForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select a verified email to display' />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value='m@example.com'>m@example.com</SelectItem>
-                  <SelectItem value='m@google.com'>m@google.com</SelectItem>
-                  <SelectItem value='m@support.com'>m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Input type='email' readOnly value={field.value ?? ''} />
+              </FormControl>
               <FormDescription>
-                You can manage verified email addresses in your{' '}
-                <Link to='/'>email settings</Link>.
+                This is the email associated with your account.
               </FormDescription>
               <FormMessage />
             </FormItem>
