@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { rainbowConfig } from "../../config/rainbow.config";
 import {
   AccountCreationFailedError,
+  AccountUpdateFailedError,
   AuthenticationFailedError,
   TokenValidationFailedError,
 } from "./auth.errors";
@@ -15,7 +16,7 @@ type RainbowSessionResponse = { token: string };
 type RainbowTokenPayload = { user: { id: string }; exp?: number };
 type RainbowErrorResponse = { errorDetails: string | { msg: string }[] };
 
-// Renew the cached admin token this many milliseconds before its real expiry.
+// Renew the cached admin to  AccountUpdateFailedError,ken this many milliseconds before its real expiry.
 const ADMIN_TOKEN_EXPIRY_MARGIN_MS = 60_000;
 
 export class RainbowIdentityProvider implements IdentityProvider {
@@ -54,6 +55,22 @@ export class RainbowIdentityProvider implements IdentityProvider {
     return createdUser.data.id;
   }
 
+  async updateEmail(identityId: string, newEmail: string): Promise<void> {
+    const adminToken = await this.getAdminToken();
+
+    const response = await fetch(
+        `${rainbowConfig.host}/api/rainbow/admin/v1.0/users/${encodeURIComponent(identityId)}`,
+        {
+          method: "PUT",
+          headers: { ...this.adminHeaders(adminToken), "Content-Type": "application/json" },
+          body: JSON.stringify({ loginEmail: newEmail }),
+        },
+    );
+
+    if (!response.ok) {
+      throw new AccountUpdateFailedError(await this.readErrorMessage(response));
+    }
+  }
   async deleteAccount(identityId: string): Promise<void> {
     const adminToken = await this.getAdminToken();
 

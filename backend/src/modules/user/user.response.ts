@@ -5,6 +5,7 @@ export interface UserResponse {
   email: string;
   pseudo: string;
   bio: string | null;
+  urls: string[];
 }
 
 /** Maps a domain user to the shape exposed over the HTTP API (no internal fields leaked). */
@@ -14,5 +15,6 @@ export function toUserResponse(user: User): UserResponse {
     email: user.email,
     pseudo: user.pseudo,
     bio: user.bio,
+    urls: user.urls,
   };
 }

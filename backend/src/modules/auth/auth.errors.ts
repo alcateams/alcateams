@@ -18,3 +18,10 @@ export class TokenValidationFailedError extends Error {
     this.name = "TokenValidationFailedError";
   }
 }
+
+export class AccountUpdateFailedError extends Error {
+  constructor(cause: string) {
+    super(`Impossible de mettre à jour le compte : ${cause}`);
+    this.name = "AccountUpdateFailedError";
+  }
+}

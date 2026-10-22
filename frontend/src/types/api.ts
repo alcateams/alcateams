@@ -3,6 +3,7 @@ export type User = {
   email: string
   pseudo: string
   bio: string | null
+  urls: string[]
 }
 
 export type AuthResponse = {

@@ -8,6 +8,7 @@ export function toEntity(record: PrismaUser): User {
     email: record.email,
     pseudo: record.pseudo,
     bio: record.bio,
+    urls: record.urls,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   });
@@ -19,6 +20,7 @@ export function toPersistence(user: User): UserProps {
     email: user.email,
     pseudo: user.pseudo,
     bio: user.bio,
+    urls: user.urls,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
