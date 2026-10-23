@@ -11,12 +11,13 @@ import type { CommunityRepositoryPort } from "./community.repository.port";
 
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
 const FOREIGN_KEY_VIOLATION = "P2003";
+const COMMUNITY_NAME_CONSTRAINT = "Community_name_key";
 
 export class CommunityRepository implements CommunityRepositoryPort {
   async save(community: Community, creatorId: string): Promise<Community> {
     try {
       // A single nested create is wrapped in an implicit transaction by Prisma, so the
-      // community, its themes and the creator's moderator membership are written atomically.
+      // community, its sub-groups and the creator's moderator membership are written atomically.
       const record = await database.community.create({
         data: {
           ...toPersistence(community),
@@ -92,20 +93,35 @@ export class CommunityRepository implements CommunityRepositoryPort {
     if (error.code === FOREIGN_KEY_VIOLATION) return new CommunityNotFoundError();
 
     if (error.code === UNIQUE_CONSTRAINT_VIOLATION) {
-      // Depending on the driver, `target` is either the list of columns or the constraint name
-      // (e.g. `CommunityMember_pkey`), so normalise both shapes into one string to match on.
-      const target = error.meta?.target;
-      const fields = Array.isArray(target) ? target.join(",") : String(target ?? "");
-      if (fields.includes("name")) return new CommunityNameAlreadyTakenError();
-      // The composite primary key of `CommunityMember` collides when the user is already a member.
-      if (
-        fields.includes("communityId") ||
-        fields.includes("userId") ||
-        fields.includes("CommunityMember")
-      ) {
-        return new AlreadyMemberError();
-      }
+      if (this.isCommunityNameViolation(error)) return new CommunityNameAlreadyTakenError();
+      if (this.isMembershipViolation(error)) return new AlreadyMemberError();
     }
     return error;
+  }
+
+  /**
+   * The composite primary key of `CommunityMember` collides when the user is already a member.
+   * Depending on the driver, `target` is either the constraint name (`CommunityMember_pkey`) or
+   * the list of columns, so match on the model for the latter: `SubGroup (communityId, name)`
+   * also involves `communityId`.
+   */
+  private isMembershipViolation(error: Prisma.PrismaClientKnownRequestError): boolean {
+    const target = error.meta?.target;
+    if (typeof target === "string") return target.startsWith("CommunityMember");
+    return error.meta?.modelName === "CommunityMember";
+  }
+
+  /**
+   * The `SubGroup (communityId, name)` constraint also involves a `name` column, so only match
+   * the community's own constraint (by name, or by model + field for driver adapters that
+   * report the target as columns).
+   */
+  private isCommunityNameViolation(error: Prisma.PrismaClientKnownRequestError): boolean {
+    const target = error.meta?.target;
+    if (target === COMMUNITY_NAME_CONSTRAINT) return true;
+    if (Array.isArray(target)) {
+      return error.meta?.modelName === "Community" && target.length === 1 && target[0] === "name";
+    }
+    return false;
   }
 }

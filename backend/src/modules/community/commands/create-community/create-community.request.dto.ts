@@ -10,7 +10,13 @@ export const createCommunityDto = z.object({
         theme: z.string().min(2).max(50),
       }),
     )
-    .min(1, "Au moins un sous-groupe est requis"),
+    .min(1, "Au moins un sous-groupe est requis")
+    .refine(
+      (subGroups) =>
+        new Set(subGroups.map((subGroup) => subGroup.name.trim().toLowerCase())).size ===
+        subGroups.length,
+      "Les noms de sous-groupes doivent être uniques",
+    ),
 });
 
 export type CreateCommunityRequest = z.infer<typeof createCommunityDto>;

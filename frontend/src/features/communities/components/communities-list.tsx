@@ -9,10 +9,18 @@ import {
 import { useMyCommunities } from '../api/get-my-communities'
 
 export function CommunitiesList() {
-  const { data: communities, isLoading } = useMyCommunities()
+  const { data: communities, isLoading, isError } = useMyCommunities()
 
   if (isLoading) {
     return <p className='text-muted-foreground'>Chargement des communautés…</p>
+  }
+
+  if (isError) {
+    return (
+      <p className='text-destructive'>
+        Impossible de charger vos communautés. Réessayez plus tard.
+      </p>
+    )
   }
 
   if (!communities || communities.length === 0) {
