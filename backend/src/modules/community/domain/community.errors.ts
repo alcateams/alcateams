@@ -18,3 +18,19 @@ export class AlreadyMemberError extends Error {
     this.name = "AlreadyMemberError";
   }
 }
+
+export class NotMemberError extends Error {
+  constructor() {
+    super("Vous n'êtes pas membre de cette communauté");
+    this.name = "NotMemberError";
+  }
+}
+
+export class LastModeratorError extends Error {
+  constructor() {
+    super(
+      "Vous êtes le seul modérateur de cette communauté : nommez un autre modérateur avant de la quitter",
+    );
+    this.name = "LastModeratorError";
+  }
+}

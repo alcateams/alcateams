@@ -1,4 +1,5 @@
 import type { Community } from "../domain/community.entity";
+import type { CommunityRole } from "../domain/community.types";
 
 export interface CommunityRepositoryPort {
   /** Persists the community together with its sub-groups and the creator as a moderator. */
@@ -10,4 +11,9 @@ export interface CommunityRepositoryPort {
   search(term: string): Promise<Community[]>;
   /** Adds the user as a member of the community. Throws `AlreadyMemberError` if already a member. */
   addMember(communityId: string, userId: string): Promise<void>;
+  /** Returns the user's role in the community, or `null` if they are not a member. */
+  findMemberRole(communityId: string, userId: string): Promise<CommunityRole | null>;
+  countModerators(communityId: string): Promise<number>;
+  /** Removes the user from the community. Throws `NotMemberError` if they are not a member. */
+  removeMember(communityId: string, userId: string): Promise<void>;
 }

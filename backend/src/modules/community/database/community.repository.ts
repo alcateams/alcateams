@@ -5,12 +5,15 @@ import {
   AlreadyMemberError,
   CommunityNameAlreadyTakenError,
   CommunityNotFoundError,
+  NotMemberError,
 } from "../domain/community.errors";
+import type { CommunityRole } from "../domain/community.types";
 import { toEntity, toPersistence } from "./community.mapper";
 import type { CommunityRepositoryPort } from "./community.repository.port";
 
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
 const FOREIGN_KEY_VIOLATION = "P2003";
+const RECORD_NOT_FOUND = "P2025";
 const COMMUNITY_NAME_CONSTRAINT = "Community_name_key";
 
 export class CommunityRepository implements CommunityRepositoryPort {
@@ -78,6 +81,35 @@ export class CommunityRepository implements CommunityRepositoryPort {
       });
     } catch (error) {
       throw this.translatePersistenceError(error);
+    }
+  }
+
+  async findMemberRole(communityId: string, userId: string): Promise<CommunityRole | null> {
+    const membership = await database.communityMember.findUnique({
+      where: { communityId_userId: { communityId, userId } },
+      select: { role: true },
+    });
+    return membership?.role ?? null;
+  }
+
+  async countModerators(communityId: string): Promise<number> {
+    return database.communityMember.count({ where: { communityId, role: "MODERATOR" } });
+  }
+
+  async removeMember(communityId: string, userId: string): Promise<void> {
+    try {
+      await database.communityMember.delete({
+        where: { communityId_userId: { communityId, userId } },
+      });
+    } catch (error) {
+      // The membership was already removed (e.g. the user left twice at the same time).
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === RECORD_NOT_FOUND
+      ) {
+        throw new NotMemberError();
+      }
+      throw error;
     }
   }
 

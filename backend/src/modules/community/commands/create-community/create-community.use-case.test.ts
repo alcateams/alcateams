@@ -33,6 +33,9 @@ const makeRepository = () =>
     listForUser: vi.fn(async () => []),
     search: vi.fn(async () => []),
     addMember: vi.fn(async () => {}),
+    findMemberRole: vi.fn(async () => null),
+    countModerators: vi.fn(async () => 0),
+    removeMember: vi.fn(async () => {}),
   }) satisfies CommunityRepositoryPort;
 
 describe("CreateCommunityUseCase", () => {
