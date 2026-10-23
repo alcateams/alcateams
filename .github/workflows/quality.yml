@@ -10,9 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  lint-and-format:
-    name: Lint & Format Check
+  backend:
+    name: Backend Lint & Format Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
 
     steps:
       - name: Checkout repository
@@ -21,20 +24,49 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
-          node-version: "20"
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Lint Backend (Oxlint)
-        working-directory: ./backend
-        run: npx oxlint@latest
+      # Use the locked oxlint/oxfmt versions: `@latest` drifts from what developers run.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
-      - name: Format Check Backend (Oxfmt)
-        working-directory: ./backend
-        run: npx oxfmt@latest --check .
+      - name: Lint (Oxlint)
+        run: npm run lint
 
-      # - name: Lint Frontend (Oxlint)
-      #   working-directory: ./frontend
-      #   run: npx oxlint@latest
+      - name: Format Check (Oxfmt)
+        run: npm run fmt:check
 
-      # - name: Format Check Frontend (Oxfmt)
-      #   working-directory: ./frontend
-      #   run: npx oxfmt@latest --check .
+  frontend:
+    name: Frontend Lint & Format Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 12
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      # Oxlint loads the TanStack Query ESLint plugin (`jsPlugins`) from node_modules.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Oxlint)
+        run: pnpm lint
+
+      - name: Format Check (Oxfmt)
+        run: pnpm format:check
