@@ -1,6 +1,6 @@
 /**
  * Pushes every stored message to Meilisearch, e.g. after enabling search or wiping the index.
- * Safe to rerun: documents are replaced by id. Run with `pnpm search:reindex`.
+ * Safe to rerun: documents are replaced by id. Run with `npm run search:reindex` from a checkout (not in the production image).
  */
 import { meilisearchConfig } from "../config/meilisearch.config";
 import { database } from "../lib/database";

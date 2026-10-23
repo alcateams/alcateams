@@ -1,4 +1,4 @@
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { type MessageSearchPage, type MessageSearchSort } from '@/types/api'
 import { api } from '@/lib/api-client'
 
@@ -30,6 +30,7 @@ export const useSearchMessages = (params: MessageSearchParams) => {
     getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
     enabled: params.q.trim().length > 0,
     // Keep showing the previous results while the next query loads, instead of flashing empty.
-    placeholderData: keepPreviousData,
+    placeholderData: (previous) =>
+      params.q.trim().length > 0 ? previous : undefined,
   })
 }

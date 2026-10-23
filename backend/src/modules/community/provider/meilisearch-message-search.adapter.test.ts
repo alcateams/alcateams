@@ -13,7 +13,10 @@ const query = {
 };
 
 const stubFetch = (response: Response) => {
-  const fetchMock = vi.fn<typeof fetch>(async () => response);
+  // The first search configures the index; only the search call gets the given response.
+  const fetchMock = vi.fn<typeof fetch>(async (_url, init) =>
+    init?.method === "PATCH" ? Response.json({ taskUid: 1 }, { status: 202 }) : response,
+  );
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 };
@@ -60,7 +63,7 @@ describe("MeilisearchMessageSearch", () => {
       subGroupId: "s1",
     });
 
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const [url, init] = fetchMock.mock.calls[1]!;
     expect(String(url)).toBe("https://meili.test/indexes/messages/search");
     expect(JSON.parse(String(init?.body))).toMatchObject({
       q: "roi",

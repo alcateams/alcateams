@@ -9,6 +9,8 @@ const INDEX_SETTINGS = {
   searchableAttributes: ["text", "authorPseudo"],
   filterableAttributes: ["communityId", "subGroupId", "authorId", "createdAt"],
   sortableAttributes: ["createdAt"],
+  // Meilisearch caps reachable results at 1000 by default.
+  pagination: { maxTotalHits: 100_000 },
 };
 
 /** What Meilisearch stores for a message. `createdAt` is a Unix timestamp in milliseconds so it
@@ -40,14 +42,15 @@ export function toMessageDocument(message: IndexedMessage): MessageDocument {
  * asynchronous tasks: a resolved call means the write was accepted, not that it is searchable yet.
  */
 export class MeilisearchMessageIndexer implements MessageIndexerPort {
-  /** Settings are pushed once per process, before the first documents. */
-  private settingsApplied: Promise<void> | null = null;
+  private readonly setup: MessagesIndexSetup;
 
-  constructor(private readonly config: MeilisearchConfig) {}
+  constructor(private readonly config: MeilisearchConfig) {
+    this.setup = new MessagesIndexSetup(config);
+  }
 
   async index(messages: IndexedMessage[]): Promise<void> {
     if (messages.length === 0) return;
-    await this.applySettings();
+    await this.setup.ensure();
     await this.request(
       "ajout des documents",
       "POST",
@@ -56,23 +59,33 @@ export class MeilisearchMessageIndexer implements MessageIndexerPort {
     );
   }
 
-  /** Also creates the index if needed. Tasks on an index run in order, so these settings apply
-   * before the documents queued after them. */
-  private applySettings(): Promise<void> {
-    this.settingsApplied ??= this.request(
+  private async request(step: string, method: string, path: string, body: unknown): Promise<void> {
+    await meilisearchRequest(this.config, step, method, path, body);
+  }
+}
+
+/** Creates the index if needed and applies its settings, once per instance. Tasks on an index
+ * run in order, so these settings apply before the documents queued after them. */
+export class MessagesIndexSetup {
+  private applied: Promise<void> | null = null;
+
+  constructor(private readonly config: MeilisearchConfig) {}
+
+  ensure(): Promise<void> {
+    this.applied ??= meilisearchRequest<unknown>(
+      this.config,
       "configuration de l'index",
       "PATCH",
       `/indexes/${MESSAGES_INDEX}/settings`,
       INDEX_SETTINGS,
-    ).catch((error: unknown) => {
-      // Retry on the next call instead of caching the failure.
-      this.settingsApplied = null;
-      throw error;
-    });
-    return this.settingsApplied;
-  }
-
-  private async request(step: string, method: string, path: string, body: unknown): Promise<void> {
-    await meilisearchRequest(this.config, step, method, path, body);
+    ).then(
+      () => undefined,
+      (error: unknown) => {
+        // Retry on the next call instead of caching the failure.
+        this.applied = null;
+        throw error;
+      },
+    );
+    return this.applied;
   }
 }
