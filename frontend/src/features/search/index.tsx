@@ -34,9 +34,11 @@ export function MessageSearch() {
   // The URL follows the input after a short pause, so each keystroke doesn't fire a search.
   const [text, setText] = useState(q)
   // Follow the URL when it changes from elsewhere (links, back/forward).
-  useEffect(() => {
-    setText((current) => (current.trim() === q ? current : q))
-  }, [q])
+  const [syncedQ, setSyncedQ] = useState(q)
+  if (syncedQ !== q) {
+    setSyncedQ(q)
+    if (text.trim() !== q) setText(q)
+  }
   useEffect(() => {
     if (text.trim() === q) return
     const timeout = setTimeout(

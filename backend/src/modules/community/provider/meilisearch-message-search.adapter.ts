@@ -72,17 +72,15 @@ export class MeilisearchMessageSearch implements MessageSearchPort {
     });
 
     return {
-      hits: response.hits.map(
-        (hit): MessageSearchHit => ({
-          id: hit.id,
-          communityId: hit.communityId,
-          subGroupId: hit.subGroupId,
-          authorId: hit.authorId,
-          authorPseudo: hit.authorPseudo,
-          createdAt: new Date(hit.createdAt),
-          snippet: toSnippet(hit._formatted?.text ?? hit.text),
-        }),
-      ),
+      hits: response.hits.map((hit): MessageSearchHit => ({
+        id: hit.id,
+        communityId: hit.communityId,
+        subGroupId: hit.subGroupId,
+        authorId: hit.authorId,
+        authorPseudo: hit.authorPseudo,
+        createdAt: new Date(hit.createdAt),
+        snippet: toSnippet(hit._formatted?.text ?? hit.text),
+      })),
       total: response.estimatedTotalHits ?? response.hits.length,
     };
   }
