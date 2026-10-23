@@ -40,7 +40,7 @@ export function CommunityJoinDialog({
   const [term, setTerm] = useState('')
   const debouncedTerm = useDebouncedValue(term, 300)
 
-  const { data: results, isFetching } = useSearchCommunities(debouncedTerm)
+  const { data: results, isFetching, isError } = useSearchCommunities(debouncedTerm)
   const { data: myCommunities } = useMyCommunities()
   const joinedIds = new Set((myCommunities ?? []).map((community) => community.id))
 
@@ -58,7 +58,7 @@ export function CommunityJoinDialog({
 
   const hasSearched = debouncedTerm.trim().length >= MIN_SEARCH_LENGTH
   const noResults =
-    hasSearched && !isFetching && (results?.length ?? 0) === 0
+    hasSearched && !isFetching && !isError && (results?.length ?? 0) === 0
 
   return (
     <Dialog
@@ -83,6 +83,7 @@ export function CommunityJoinDialog({
           autoFocus
           placeholder='Rechercher une communauté…'
           value={term}
+          maxLength={100}
           onChange={(event) => setTerm(event.target.value)}
         />
 
@@ -91,6 +92,12 @@ export function CommunityJoinDialog({
             <p className='text-muted-foreground py-6 text-center text-sm'>
               Saisissez au moins {MIN_SEARCH_LENGTH} caractères pour lancer la
               recherche.
+            </p>
+          )}
+
+          {hasSearched && isError && !isFetching && (
+            <p className='text-destructive py-6 text-center text-sm'>
+              La recherche a échoué. Veuillez réessayer.
             </p>
           )}
 

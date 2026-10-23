@@ -1,11 +1,16 @@
 import { Prisma } from "../../../generated/prisma/client";
 import { database } from "../../../lib/database";
 import type { Community } from "../domain/community.entity";
-import { AlreadyMemberError, CommunityNameAlreadyTakenError } from "../domain/community.errors";
+import {
+  AlreadyMemberError,
+  CommunityNameAlreadyTakenError,
+  CommunityNotFoundError,
+} from "../domain/community.errors";
 import { toEntity, toPersistence } from "./community.mapper";
 import type { CommunityRepositoryPort } from "./community.repository.port";
 
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
+const FOREIGN_KEY_VIOLATION = "P2003";
 
 export class CommunityRepository implements CommunityRepositoryPort {
   async save(community: Community, creatorId: string): Promise<Community> {
@@ -81,15 +86,23 @@ export class CommunityRepository implements CommunityRepositoryPort {
    * of truth, so the loser of the race gets a meaningful 409.
    */
   private translatePersistenceError(error: unknown): unknown {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === UNIQUE_CONSTRAINT_VIOLATION
-    ) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return error;
+
+    // The community was deleted between the existence check and the membership insert.
+    if (error.code === FOREIGN_KEY_VIOLATION) return new CommunityNotFoundError();
+
+    if (error.code === UNIQUE_CONSTRAINT_VIOLATION) {
+      // Depending on the driver, `target` is either the list of columns or the constraint name
+      // (e.g. `CommunityMember_pkey`), so normalise both shapes into one string to match on.
       const target = error.meta?.target;
-      const fields = Array.isArray(target) ? target : [target];
+      const fields = Array.isArray(target) ? target.join(",") : String(target ?? "");
       if (fields.includes("name")) return new CommunityNameAlreadyTakenError();
       // The composite primary key of `CommunityMember` collides when the user is already a member.
-      if (fields.includes("communityId") || fields.includes("userId")) {
+      if (
+        fields.includes("communityId") ||
+        fields.includes("userId") ||
+        fields.includes("CommunityMember")
+      ) {
         return new AlreadyMemberError();
       }
     }

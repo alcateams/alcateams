@@ -1,4 +1,5 @@
 import { type Request, type Response } from "express";
+import { searchCommunitiesDto } from "./search-communities.request.dto";
 import { SearchCommunitiesUseCase } from "./search-communities.use-case";
 import { CommunityRepository } from "../../database/community.repository";
 import { toCommunityResponse } from "../../community.response";
@@ -12,7 +13,13 @@ export const searchCommunitiesHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  const term = typeof req.query.q === "string" ? req.query.q : "";
+  // An array (`?q=a&q=b`) or an over-long term fails validation instead of being coerced.
+  const validation = searchCommunitiesDto.safeParse(req.query);
+  if (!validation.success) {
+    res.status(400).json({ error: validation.error.flatten().fieldErrors });
+    return;
+  }
+  const term = validation.data.q;
 
   try {
     const communities = await searchCommunitiesUseCase.execute(term);
