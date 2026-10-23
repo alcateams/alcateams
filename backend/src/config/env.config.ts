@@ -12,6 +12,9 @@ const envSchema = z.object({
   // Where Rainbow posts S2S events (which may carry message bodies). We don't consume them, so
   // point it at an endpoint we control; there is deliberately no default.
   RAINBOW_S2S_CALLBACK_URL: z.url("RAINBOW_S2S_CALLBACK_URL must be a valid URL"),
+  // Message search. Leave both unset to run without indexing (e.g. in local development).
+  MEILISEARCH_HOST: z.url("MEILISEARCH_HOST must be a valid URL").optional(),
+  MEILISEARCH_API_KEY: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

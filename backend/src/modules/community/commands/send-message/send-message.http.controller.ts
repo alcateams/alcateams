@@ -7,7 +7,7 @@ import {
   NotCommunityMemberError,
   SubGroupNotFoundError,
 } from "../../domain/community.errors";
-import { NoopMessageIndexer } from "../../provider/noop-message-indexer.adapter";
+import { createMessageIndexer } from "../../provider/search-engine";
 import { RainbowMessagingProvider } from "../../provider/rainbow-messaging-provider.adapter";
 import { sendMessageDto } from "./send-message.request.dto";
 import { SendMessageUseCase } from "./send-message.use-case";
@@ -16,7 +16,7 @@ const sendMessageUseCase = new SendMessageUseCase(
   new CommunityRepository(),
   new MessageRepository(),
   new RainbowMessagingProvider(),
-  new NoopMessageIndexer(),
+  createMessageIndexer(),
 );
 
 export const sendMessageHandler = async (req: Request, res: Response) => {

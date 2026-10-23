@@ -1,6 +1,6 @@
 name: alcateams
 
-version: '3.9'
+version: "3.9"
 
 services:
   postgres:
@@ -9,9 +9,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: 'user'
-      POSTGRES_PASSWORD: 'password'
-      POSTGRES_DB: 'alcateams'
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "alcateams"
     volumes:
       - alcateams-postgres:/var/lib/postgresql/data
     networks:

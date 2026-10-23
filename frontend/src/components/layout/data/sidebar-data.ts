@@ -19,6 +19,7 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
+  Search,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -64,6 +65,11 @@ export const sidebarData: SidebarData = {
           title: 'Communautés',
           url: '/communities',
           icon: Users2,
+        },
+        {
+          title: 'Recherche',
+          url: '/search',
+          icon: Search,
         },
         /*
         {

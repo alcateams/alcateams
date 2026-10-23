@@ -85,7 +85,7 @@ describe("SendMessageUseCase", () => {
     const { message, delivery } = await useCase.execute(input);
     await expect(delivery).resolves.toBeUndefined();
 
-    expect(indexer.index).toHaveBeenCalledWith({ ...message, communityId: "community-1" });
+    expect(indexer.index).toHaveBeenCalledWith([{ ...message, communityId: "community-1" }]);
   });
 
   it("rejects non-members before storing anything", async () => {

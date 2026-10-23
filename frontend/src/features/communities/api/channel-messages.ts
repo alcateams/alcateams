@@ -85,16 +85,18 @@ export const useSendMessage = (
     },
     onError: (_error, _input, context) => {
       // Drop only this send's optimistic message: others may still be in flight.
-      queryClient.setQueryData<InfiniteData<MessagePage>>(queryKey, (data) =>
-        data && {
-          ...data,
-          pages: data.pages.map((page) => ({
-            ...page,
-            messages: page.messages.filter(
-              (message) => message.id !== context?.pendingId
-            ),
-          })),
-        }
+      queryClient.setQueryData<InfiniteData<MessagePage>>(
+        queryKey,
+        (data) =>
+          data && {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              messages: page.messages.filter(
+                (message) => message.id !== context?.pendingId
+              ),
+            })),
+          }
       )
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey }),

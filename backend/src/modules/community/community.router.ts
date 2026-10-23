@@ -7,6 +7,7 @@ import { sendMessageHandler } from "./commands/send-message/send-message.http.co
 import { getCommunityHandler } from "./queries/get-community/get-community.http.controller";
 import { listMessagesHandler } from "./queries/list-messages/list-messages.http.controller";
 import { listMyCommunitiesHandler } from "./queries/list-my-communities/list-my-communities.http.controller";
+import { searchMessagesHandler } from "./queries/search-messages/search-messages.http.controller";
 import { searchCommunitiesHandler } from "./queries/search-communities/search-communities.http.controller";
 
 const identityProvider = new RainbowIdentityProvider();
@@ -29,3 +30,8 @@ communityRouter.post(
   requireAuth(identityProvider),
   sendMessageHandler,
 );
+
+/** Message search across the caller's communities, mounted at `/api/search`. */
+export const searchRouter = Router();
+
+searchRouter.get("/messages", requireAuth(identityProvider), searchMessagesHandler);

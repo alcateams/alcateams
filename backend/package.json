@@ -5,7 +5,8 @@
   "module": "src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node24 --format=esm --packages=external --sourcemap --outfile=dist/index.js",
+    "typecheck": "tsc",
     "start": "node dist/index.js",
     "docker:env": "docker-compose --file docker/docker-compose.yml up --build",
     "db:push": "prisma db push",
@@ -14,11 +15,13 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "search:reindex": "tsx src/scripts/reindex-messages.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
+    "cors": "^2.8.6",
     "dotenv": "^18.0.8",
     "express": "^5.2.1",
     "jwt-decode": "^4.0.0",
@@ -30,9 +33,9 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.0.0",
     "@types/pg": "^8.23.1",
-    "cors": "^2.8.6",
-    "oxfmt": "^0.55.0",
-    "oxlint": "^1.70.0",
+    "esbuild": "^0.28.2",
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
     "prisma": "^7.10.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.2",
