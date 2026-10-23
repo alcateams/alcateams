@@ -5,9 +5,10 @@ import {
   AlreadyMemberError,
   CommunityNameAlreadyTakenError,
   CommunityNotFoundError,
-  NotMemberError,
+  GeneralChannelAlreadyExistsError,
+  NotCommunityMemberError,
 } from "../domain/community.errors";
-import type { CommunityRole } from "../domain/community.types";
+import type { CommunityRole, CreateSubGroupProps } from "../domain/community.types";
 import { toEntity, toPersistence } from "./community.mapper";
 import type { CommunityRepositoryPort } from "./community.repository.port";
 
@@ -15,6 +16,11 @@ const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
 const FOREIGN_KEY_VIOLATION = "P2003";
 const RECORD_NOT_FOUND = "P2025";
 const COMMUNITY_NAME_CONSTRAINT = "Community_name_key";
+
+// The general channel first (enum declaration order), then sub-groups in creation order.
+const INCLUDE_SUB_GROUPS = {
+  subGroups: { orderBy: [{ kind: "asc" }, { createdAt: "asc" }] },
+} satisfies Prisma.CommunityInclude;
 
 export class CommunityRepository implements CommunityRepositoryPort {
   async save(community: Community, creatorId: string): Promise<Community> {
@@ -26,7 +32,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
           ...toPersistence(community),
           members: { create: { userId: creatorId, role: "MODERATOR" } },
         },
-        include: { subGroups: true },
+        include: INCLUDE_SUB_GROUPS,
       });
       return toEntity(record);
     } catch (error) {
@@ -37,7 +43,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
   async findByName(name: string): Promise<Community | null> {
     const record = await database.community.findUnique({
       where: { name },
-      include: { subGroups: true },
+      include: INCLUDE_SUB_GROUPS,
     });
     return record ? toEntity(record) : null;
   }
@@ -45,7 +51,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
   async findById(id: string): Promise<Community | null> {
     const record = await database.community.findUnique({
       where: { id },
-      include: { subGroups: true },
+      include: INCLUDE_SUB_GROUPS,
     });
     return record ? toEntity(record) : null;
   }
@@ -53,7 +59,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
   async listForUser(userId: string): Promise<Community[]> {
     const records = await database.community.findMany({
       where: { members: { some: { userId } } },
-      include: { subGroups: true },
+      include: INCLUDE_SUB_GROUPS,
       orderBy: { createdAt: "desc" },
     });
     return records.map(toEntity);
@@ -67,7 +73,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
           { description: { contains: term, mode: "insensitive" } },
         ],
       },
-      include: { subGroups: true },
+      include: INCLUDE_SUB_GROUPS,
       orderBy: { name: "asc" },
       take: 20,
     });
@@ -92,6 +98,36 @@ export class CommunityRepository implements CommunityRepositoryPort {
     return membership?.role ?? null;
   }
 
+  async listMemberIds(communityId: string): Promise<string[]> {
+    const members = await database.communityMember.findMany({
+      where: { communityId },
+      select: { userId: true },
+    });
+    return members.map((member) => member.userId);
+  }
+
+  async addSubGroup(communityId: string, subGroup: CreateSubGroupProps): Promise<Community> {
+    try {
+      const record = await database.community.update({
+        where: { id: communityId },
+        data: { subGroups: { create: subGroup } },
+        include: INCLUDE_SUB_GROUPS,
+      });
+      return toEntity(record);
+    } catch (error) {
+      // The general channel's name is reserved, so a `(communityId, name)` collision on it means
+      // another request created it first.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === UNIQUE_CONSTRAINT_VIOLATION &&
+        subGroup.kind === "GENERAL"
+      ) {
+        throw new GeneralChannelAlreadyExistsError();
+      }
+      throw this.translatePersistenceError(error);
+    }
+  }
+
   async countModerators(communityId: string): Promise<number> {
     return database.communityMember.count({ where: { communityId, role: "MODERATOR" } });
   }
@@ -107,7 +143,7 @@ export class CommunityRepository implements CommunityRepositoryPort {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === RECORD_NOT_FOUND
       ) {
-        throw new NotMemberError();
+        throw new NotCommunityMemberError();
       }
       throw error;
     }

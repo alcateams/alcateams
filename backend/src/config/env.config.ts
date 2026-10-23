@@ -9,6 +9,9 @@ const envSchema = z.object({
   RAINBOW_APP_SECRET: z.string().min(1, "RAINBOW_APP_SECRET is required"),
   RAINBOW_ADMIN_EMAIL: z.email("RAINBOW_ADMIN_EMAIL must be a valid email"),
   RAINBOW_ADMIN_PASSWORD: z.string().min(1, "RAINBOW_ADMIN_PASSWORD is required"),
+  // Where Rainbow posts S2S events (which may carry message bodies). We don't consume them, so
+  // point it at an endpoint we control; there is deliberately no default.
+  RAINBOW_S2S_CALLBACK_URL: z.url("RAINBOW_S2S_CALLBACK_URL must be a valid URL"),
 });
 
 const parsed = envSchema.safeParse(process.env);

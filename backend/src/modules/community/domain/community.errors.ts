@@ -19,10 +19,10 @@ export class AlreadyMemberError extends Error {
   }
 }
 
-export class NotMemberError extends Error {
+export class NotCommunityMemberError extends Error {
   constructor() {
-    super("Vous n'êtes pas membre de cette communauté");
-    this.name = "NotMemberError";
+    super("Vous devez être membre de cette communauté");
+    this.name = "NotCommunityMemberError";
   }
 }
 
@@ -32,5 +32,20 @@ export class LastModeratorError extends Error {
       "Vous êtes le seul modérateur de cette communauté : nommez un autre modérateur avant de la quitter",
     );
     this.name = "LastModeratorError";
+  }
+}
+
+export class SubGroupNotFoundError extends Error {
+  constructor() {
+    super("Ce sous-groupe est introuvable");
+    this.name = "SubGroupNotFoundError";
+  }
+}
+
+/** Raised when two requests race to create the same community's general channel. */
+export class GeneralChannelAlreadyExistsError extends Error {
+  constructor() {
+    super("Le canal général de cette communauté existe déjà");
+    this.name = "GeneralChannelAlreadyExistsError";
   }
 }

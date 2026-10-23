@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { type Community } from '@/types/api'
-import { Folder, Hash, LogOut } from 'lucide-react'
+import { Folder, Hash, LogOut, MessagesSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -42,8 +43,14 @@ export function CommunitiesList() {
       {communities.map((community) => (
         <Card key={community.id}>
           <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Folder className='size-4' /> {community.name}
+            <CardTitle>
+              <Link
+                to='/communities/$communityId'
+                params={{ communityId: community.id }}
+                className='flex items-center gap-2 hover:underline'
+              >
+                <Folder className='size-4' /> {community.name}
+              </Link>
             </CardTitle>
             <CardDescription>{community.description}</CardDescription>
             <CardAction>
@@ -60,18 +67,25 @@ export function CommunitiesList() {
           <CardContent>
             {/* Arborescence: the community's sub-groups shown as child nodes. */}
             <ul className='ms-2 border-s ps-4'>
-              {community.subGroups.map((subGroup) => (
-                <li
-                  key={subGroup.id}
-                  className='flex items-center gap-2 py-1 text-sm'
-                >
-                  <Hash className='size-3.5 text-muted-foreground' />
-                  <span className='font-medium'>{subGroup.name}</span>
-                  <span className='text-muted-foreground'>
-                    · {subGroup.theme}
-                  </span>
-                </li>
-              ))}
+              {community.subGroups.map((subGroup) => {
+                const Icon = subGroup.kind === 'GENERAL' ? MessagesSquare : Hash
+                return (
+                  <li key={subGroup.id}>
+                    <Link
+                      to='/communities/$communityId'
+                      params={{ communityId: community.id }}
+                      search={{ channel: subGroup.id }}
+                      className='flex items-center gap-2 rounded-sm py-1 text-sm hover:bg-accent'
+                    >
+                      <Icon className='size-3.5 text-muted-foreground' />
+                      <span className='font-medium'>{subGroup.name}</span>
+                      <span className='text-muted-foreground'>
+                        · {subGroup.theme}
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </CardContent>
         </Card>

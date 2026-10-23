@@ -11,3 +11,10 @@ export class BubbleDeletionFailedError extends Error {
     this.name = "BubbleDeletionFailedError";
   }
 }
+
+export class BubbleMemberAdditionFailedError extends Error {
+  constructor(cause: string) {
+    super(`Impossible d'ajouter le membre à la bulle : ${cause}`);
+    this.name = "BubbleMemberAdditionFailedError";
+  }
+}

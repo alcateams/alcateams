@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { type Community } from '@/types/api'
 import { Check, Hash, Search as SearchIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import { type Community } from '@/types/api'
 import { handleServerError } from '@/lib/handle-server-error'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +14,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { useMyCommunities } from '../api/get-my-communities'
 import { useJoinCommunity } from '../api/join-community'
-import { MIN_SEARCH_LENGTH, useSearchCommunities } from '../api/search-communities'
+import {
+  MIN_SEARCH_LENGTH,
+  useSearchCommunities,
+} from '../api/search-communities'
 
 type CommunityJoinDialogProps = {
   open: boolean
@@ -40,9 +43,15 @@ export function CommunityJoinDialog({
   const [term, setTerm] = useState('')
   const debouncedTerm = useDebouncedValue(term, 300)
 
-  const { data: results, isFetching, isError } = useSearchCommunities(debouncedTerm)
+  const {
+    data: results,
+    isFetching,
+    isError,
+  } = useSearchCommunities(debouncedTerm)
   const { data: myCommunities } = useMyCommunities()
-  const joinedIds = new Set((myCommunities ?? []).map((community) => community.id))
+  const joinedIds = new Set(
+    (myCommunities ?? []).map((community) => community.id)
+  )
 
   const joinCommunity = useJoinCommunity({
     onSuccess: (community) => {
@@ -89,20 +98,20 @@ export function CommunityJoinDialog({
 
         <div className='flex-1 space-y-2 overflow-y-auto px-1'>
           {!hasSearched && (
-            <p className='text-muted-foreground py-6 text-center text-sm'>
+            <p className='py-6 text-center text-sm text-muted-foreground'>
               Saisissez au moins {MIN_SEARCH_LENGTH} caractères pour lancer la
               recherche.
             </p>
           )}
 
           {hasSearched && isError && !isFetching && (
-            <p className='text-destructive py-6 text-center text-sm'>
+            <p className='py-6 text-center text-sm text-destructive'>
               La recherche a échoué. Veuillez réessayer.
             </p>
           )}
 
           {noResults && (
-            <p className='text-muted-foreground py-6 text-center text-sm'>
+            <p className='py-6 text-center text-sm text-muted-foreground'>
               Aucun résultat.
             </p>
           )}
@@ -143,11 +152,11 @@ function CommunityResult({
     <div className='flex items-start justify-between gap-3 rounded-md border p-3'>
       <div className='min-w-0'>
         <p className='font-medium'>{community.name}</p>
-        <p className='text-muted-foreground truncate text-sm'>
+        <p className='truncate text-sm text-muted-foreground'>
           {community.description}
         </p>
         {community.subGroups.length > 0 && (
-          <div className='text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs'>
+          <div className='mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground'>
             {community.subGroups.map((subGroup) => (
               <span key={subGroup.id} className='flex items-center gap-1'>
                 <Hash className='size-3' />
