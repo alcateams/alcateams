@@ -14,6 +14,7 @@ export class Community {
         id: crypto.randomUUID(),
         name: subGroup.name,
         theme: subGroup.theme,
+        kind: subGroup.kind,
         rainbowBubbleId: subGroup.rainbowBubbleId,
         createdAt: now,
         updatedAt: now,
@@ -37,6 +38,15 @@ export class Community {
 
   get subGroups(): readonly SubGroupProps[] {
     return this.props.subGroups;
+  }
+
+  /** The community-wide channel, absent for communities created before channels existed. */
+  get generalChannel(): SubGroupProps | undefined {
+    return this.props.subGroups.find((subGroup) => subGroup.kind === "GENERAL");
+  }
+
+  findSubGroup(subGroupId: string): SubGroupProps | undefined {
+    return this.props.subGroups.find((subGroup) => subGroup.id === subGroupId);
   }
 
   get createdAt(): Date {

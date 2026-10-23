@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GENERAL_CHANNEL, isReservedSubGroupName } from "../../domain/general-channel";
 
 export const createCommunityDto = z.object({
   name: z.string().min(2).max(80),
@@ -6,7 +7,14 @@ export const createCommunityDto = z.object({
   subGroups: z
     .array(
       z.object({
-        name: z.string().min(2).max(50),
+        name: z
+          .string()
+          .min(2)
+          .max(50)
+          .refine(
+            (name) => !isReservedSubGroupName(name),
+            `« ${GENERAL_CHANNEL.name} » est réservé au canal général de la communauté`,
+          ),
         theme: z.string().min(2).max(50),
       }),
     )

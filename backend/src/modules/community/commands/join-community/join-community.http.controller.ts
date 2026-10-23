@@ -3,8 +3,14 @@ import { JoinCommunityUseCase } from "./join-community.use-case";
 import { CommunityRepository } from "../../database/community.repository";
 import { AlreadyMemberError, CommunityNotFoundError } from "../../domain/community.errors";
 import { toCommunityResponse } from "../../community.response";
+import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
+import { RainbowCommunityProvider } from "../../provider/rainbow-community-provider.adapter";
+import { BubbleMembershipSync } from "../../services/bubble-membership";
 
-const joinCommunityUseCase = new JoinCommunityUseCase(new CommunityRepository());
+const joinCommunityUseCase = new JoinCommunityUseCase(
+  new CommunityRepository(),
+  new BubbleMembershipSync(new RainbowCommunityProvider(), new RainbowIdentityProvider()),
+);
 
 export const joinCommunityHandler = async (req: Request, res: Response) => {
   // `requireAuth` guarantees `identityId` is set; guard defensively in case it is mounted without it.

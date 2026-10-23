@@ -26,3 +26,13 @@ describe("createCommunityDto", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("createCommunityDto reserved names", () => {
+  it.each(["Général", " general ", "GÉNÉRAL"])("rejects the reserved name %j", (name) => {
+    const result = createCommunityDto.safeParse({
+      ...base,
+      subGroups: [{ name, theme: "Theory" }],
+    });
+    expect(result.success).toBe(false);
+  });
+});
