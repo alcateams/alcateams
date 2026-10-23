@@ -1,6 +1,6 @@
+import { type User } from '@/types/api'
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
-import { type User } from '@/types/api'
 
 const ACCESS_TOKEN = 'alcateams_token'
 

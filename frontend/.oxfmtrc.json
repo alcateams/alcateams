@@ -1,0 +1,182 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "arrowParens": "always",
+  "semi": false,
+  "tabWidth": 2,
+  "printWidth": 80,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "sortPackageJson": false,
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles/index.css"
+  },
+  "ignorePatterns": [
+    "dist",
+    "public",
+    "CHANGELOG.md",
+    "pnpm-lock.yaml",
+    "src/routeTree.gen.ts"
+  ],
+  "sortImports": {
+    "newlinesBetween": false,
+    "customGroups": [
+      {
+        "groupName": "g00-path",
+        "elementNamePattern": ["path"]
+      },
+      {
+        "groupName": "g01-vite",
+        "elementNamePattern": ["vite"]
+      },
+      {
+        "groupName": "g02-at-vitejs",
+        "elementNamePattern": ["@vitejs/**"]
+      },
+      {
+        "groupName": "g03-react",
+        "elementNamePattern": ["react"]
+      },
+      {
+        "groupName": "g04-react-dom_client",
+        "elementNamePattern": ["react-dom/client"]
+      },
+      {
+        "groupName": "g05-react",
+        "elementNamePattern": ["react/**"]
+      },
+      {
+        "groupName": "g06-globals",
+        "elementNamePattern": ["globals"]
+      },
+      {
+        "groupName": "g07-zod",
+        "elementNamePattern": ["zod"]
+      },
+      {
+        "groupName": "g08-axios",
+        "elementNamePattern": ["axios"]
+      },
+      {
+        "groupName": "g09-date-fns",
+        "elementNamePattern": ["date-fns"]
+      },
+      {
+        "groupName": "g10-react-hook-form",
+        "elementNamePattern": ["react-hook-form"]
+      },
+      {
+        "groupName": "g11-use-intl",
+        "elementNamePattern": ["use-intl"]
+      },
+      {
+        "groupName": "g12-at-radix-ui",
+        "elementNamePattern": ["@radix-ui/**"]
+      },
+      {
+        "groupName": "g13-at-hookform_resolvers_zod",
+        "elementNamePattern": ["@hookform/resolvers/zod"]
+      },
+      {
+        "groupName": "g14-at-tanstack_react-query",
+        "elementNamePattern": ["@tanstack/react-query"]
+      },
+      {
+        "groupName": "g15-at-tanstack_react-router",
+        "elementNamePattern": ["@tanstack/react-router"]
+      },
+      {
+        "groupName": "g16-at-tanstack_react-table",
+        "elementNamePattern": ["@tanstack/react-table"]
+      },
+      {
+        "groupName": "g18-at-_assets",
+        "elementNamePattern": ["@/assets/**"]
+      },
+      {
+        "groupName": "g19-at-_api",
+        "elementNamePattern": ["@/api/**"]
+      },
+      {
+        "groupName": "g20-at-_stores",
+        "elementNamePattern": ["@/stores/**"]
+      },
+      {
+        "groupName": "g21-at-_lib",
+        "elementNamePattern": ["@/lib/**"]
+      },
+      {
+        "groupName": "g22-at-_utils",
+        "elementNamePattern": ["@/utils/**"]
+      },
+      {
+        "groupName": "g23-at-_constants",
+        "elementNamePattern": ["@/constants/**"]
+      },
+      {
+        "groupName": "g24-at-_context",
+        "elementNamePattern": ["@/context/**"]
+      },
+      {
+        "groupName": "g25-at-_hooks",
+        "elementNamePattern": ["@/hooks/**"]
+      },
+      {
+        "groupName": "g26-at-_components_layouts",
+        "elementNamePattern": ["@/components/layouts/**"]
+      },
+      {
+        "groupName": "g27-at-_components_ui",
+        "elementNamePattern": ["@/components/ui/**"]
+      },
+      {
+        "groupName": "g28-at-_components_errors",
+        "elementNamePattern": ["@/components/errors/**"]
+      },
+      {
+        "groupName": "g29-at-_components",
+        "elementNamePattern": ["@/components/**"]
+      },
+      {
+        "groupName": "g30-at-_features",
+        "elementNamePattern": ["@/features/**"]
+      }
+    ],
+    "groups": [
+      "g00-path",
+      "g01-vite",
+      "g02-at-vitejs",
+      "g03-react",
+      "g04-react-dom_client",
+      "g05-react",
+      "g06-globals",
+      "g07-zod",
+      "g08-axios",
+      "g09-date-fns",
+      "g10-react-hook-form",
+      "g11-use-intl",
+      "g12-at-radix-ui",
+      "g13-at-hookform_resolvers_zod",
+      "g14-at-tanstack_react-query",
+      "g15-at-tanstack_react-router",
+      "g16-at-tanstack_react-table",
+      ["builtin", "external", "internal", "subpath", "unknown"],
+      "g18-at-_assets",
+      "g19-at-_api",
+      "g20-at-_stores",
+      "g21-at-_lib",
+      "g22-at-_utils",
+      "g23-at-_constants",
+      "g24-at-_context",
+      "g25-at-_hooks",
+      "g26-at-_components_layouts",
+      "g27-at-_components_ui",
+      "g28-at-_components_errors",
+      "g29-at-_components",
+      "g30-at-_features",
+      ["parent", "sibling", "index"]
+    ]
+  }
+}

@@ -1,8 +1,8 @@
-import { useNavigate, useLocation } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useLocation } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
-import { currentUserQueryKey } from '@/features/auth/api/current-user'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { currentUserQueryKey } from '@/features/auth/api/current-user'
 
 interface SignOutDialogProps {
   open: boolean
