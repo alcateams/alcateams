@@ -11,29 +11,52 @@ datasource db {
 }
 
 model User {
-  id          String            @id
-  email       String            @unique
-  pseudo      String            @unique
-  bio         String?
-  urls        String[]          @default([])
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  communities CommunityMember[]
+  id            String            @id
+  email         String            @unique
+  pseudo        String            @unique
+  bio           String?
+  urls          String[]          @default([])
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  communities   CommunityMember[]
+  notifications Notification[]
 }
 
 enum CommunityRole {
   MODERATOR
+  COMODERATOR
   MEMBER
 }
 
 model Community {
-  id          String            @id @default(uuid())
-  name        String            @unique
-  description String
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  subGroups   SubGroup[]
-  members     CommunityMember[]
+  id            String            @id @default(uuid())
+  name          String            @unique
+  description   String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  subGroups     SubGroup[]
+  members       CommunityMember[]
+  notifications Notification[]
+}
+
+enum NotificationType {
+  ROLE_CHANGED
+}
+
+// A notification addressed to a single user, retrievable through `GET /api/notifications`.
+// US-031 creates one, inside the role-change transaction, to tell the member their role changed.
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  type        NotificationType
+  communityId String
+  role        CommunityRole // the new role assigned to the member
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community        @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 // A thematic sub-group ("sous-groupe") of a community, backed by one Rainbow bubble

@@ -1,4 +1,7 @@
-import { Folder, Hash } from 'lucide-react'
+import { useState } from 'react'
+import { type Community } from '@/types/api'
+import { Folder, Hash, Users } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,9 +10,16 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useMyCommunities } from '../api/get-my-communities'
+import { CommunityMembersSheet } from './community-members-sheet'
+
+// A community's moderators (MODERATOR, COMODERATOR) may see its member list.
+function canSeeMembers(community: Community): boolean {
+  return community.myRole === 'MODERATOR' || community.myRole === 'COMODERATOR'
+}
 
 export function CommunitiesList() {
   const { data: communities, isLoading, isError } = useMyCommunities()
+  const [managed, setManaged] = useState<Community | null>(null)
 
   if (isLoading) {
     return <p className='text-muted-foreground'>Chargement des communautés…</p>
@@ -32,34 +42,58 @@ export function CommunitiesList() {
   }
 
   return (
-    <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-      {communities.map((community) => (
-        <Card key={community.id}>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Folder className='size-4' /> {community.name}
-            </CardTitle>
-            <CardDescription>{community.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Arborescence: the community's sub-groups shown as child nodes. */}
-            <ul className='ms-2 border-s ps-4'>
-              {community.subGroups.map((subGroup) => (
-                <li
-                  key={subGroup.id}
-                  className='flex items-center gap-2 py-1 text-sm'
+    <>
+      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+        {communities.map((community) => (
+          <Card key={community.id}>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Folder className='size-4' /> {community.name}
+              </CardTitle>
+              <CardDescription>{community.description}</CardDescription>
+            </CardHeader>
+            <CardContent className='flex flex-col gap-4'>
+              {/* Arborescence: the community's sub-groups shown as child nodes. */}
+              <ul className='ms-2 border-s ps-4'>
+                {community.subGroups.map((subGroup) => (
+                  <li
+                    key={subGroup.id}
+                    className='flex items-center gap-2 py-1 text-sm'
+                  >
+                    <Hash className='size-3.5 text-muted-foreground' />
+                    <span className='font-medium'>{subGroup.name}</span>
+                    <span className='text-muted-foreground'>
+                      · {subGroup.theme}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {canSeeMembers(community) && (
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='self-start'
+                  onClick={() => setManaged(community)}
                 >
-                  <Hash className='size-3.5 text-muted-foreground' />
-                  <span className='font-medium'>{subGroup.name}</span>
-                  <span className='text-muted-foreground'>
-                    · {subGroup.theme}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+                  <Users className='size-4' /> Gérer les membres
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {managed && (
+        <CommunityMembersSheet
+          communityId={managed.id}
+          communityName={managed.name}
+          canManage={managed.myRole === 'MODERATOR'}
+          open={managed !== null}
+          onOpenChange={(open) => {
+            if (!open) setManaged(null)
+          }}
+        />
+      )}
+    </>
   )
 }

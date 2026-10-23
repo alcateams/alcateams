@@ -31,8 +31,13 @@ const makeRepository = () =>
     findByName: vi.fn<CommunityRepositoryPort["findByName"]>(async () => null),
     findById: vi.fn(async () => null),
     listForUser: vi.fn(async () => []),
+    listForUserWithRole: vi.fn(async () => []),
     search: vi.fn(async () => []),
     addMember: vi.fn(async () => {}),
+    findMemberRole: vi.fn(async () => null),
+    listMembers: vi.fn(async () => []),
+    countModerators: vi.fn(async () => 0),
+    changeRoleAndNotify: vi.fn(async () => {}),
   }) satisfies CommunityRepositoryPort;
 
 describe("CreateCommunityUseCase", () => {
