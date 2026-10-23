@@ -1,7 +1,6 @@
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api-client'
 import { type User } from '@/types/api'
+import { api } from '@/lib/api-client'
 
 export const currentUserQueryKey = ['current-user']
 
@@ -16,9 +15,7 @@ const getCurrentUser = (): Promise<User> => {
   return api.get('/api/users/me')
 }
 
-const updateCurrentUser = (
-    data: UpdateProfileInput,
-): Promise<User> => {
+const updateCurrentUser = (data: UpdateProfileInput): Promise<User> => {
   return api.patch('/api/users/me', data)
 }
 
@@ -35,16 +32,8 @@ export const useUpdateProfile = () => {
 
   return useMutation({
     mutationFn: updateCurrentUser,
-
-    onSuccess: async (updatedUser) => {
-      queryClient.setQueryData<User>(
-          currentUserQueryKey,
-          updatedUser,
-      )
-
-      await queryClient.invalidateQueries({
-        queryKey: currentUserQueryKey,
-      })
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData<User>(currentUserQueryKey, updatedUser)
     },
   })
 }

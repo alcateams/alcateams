@@ -19,6 +19,13 @@ export class TokenValidationFailedError extends Error {
   }
 }
 
+export class AccountDeletionFailedError extends Error {
+  constructor(cause: string) {
+    super(`Impossible de supprimer le compte : ${cause}`);
+    this.name = "AccountDeletionFailedError";
+  }
+}
+
 export class AccountUpdateFailedError extends Error {
   constructor(cause: string) {
     super(`Impossible de mettre à jour le compte : ${cause}`);

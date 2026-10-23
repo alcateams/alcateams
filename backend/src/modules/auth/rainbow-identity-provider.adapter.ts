@@ -3,11 +3,12 @@ import { jwtDecode } from "jwt-decode";
 import { rainbowConfig } from "../../config/rainbow.config";
 import {
   AccountCreationFailedError,
+  AccountDeletionFailedError,
   AccountUpdateFailedError,
   AuthenticationFailedError,
   TokenValidationFailedError,
 } from "./auth.errors";
-import type { IdentityProvider } from "./identity-provider.port";
+import type { AccountChanges, IdentityProvider } from "./identity-provider.port";
 
 type RainbowUser = { id: string };
 type RainbowUserListResponse = { data: RainbowUser[] };
@@ -55,22 +56,26 @@ export class RainbowIdentityProvider implements IdentityProvider {
     return createdUser.data.id;
   }
 
-  async updateEmail(identityId: string, newEmail: string): Promise<void> {
+  async updateAccount(identityId: string, changes: AccountChanges): Promise<void> {
     const adminToken = await this.getAdminToken();
 
     const response = await fetch(
-        `${rainbowConfig.host}/api/rainbow/admin/v1.0/users/${encodeURIComponent(identityId)}`,
-        {
-          method: "PUT",
-          headers: { ...this.adminHeaders(adminToken), "Content-Type": "application/json" },
-          body: JSON.stringify({ loginEmail: newEmail }),
-        },
+      `${rainbowConfig.host}/api/rainbow/admin/v1.0/users/${encodeURIComponent(identityId)}`,
+      {
+        method: "PUT",
+        headers: { ...this.adminHeaders(adminToken), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(changes.email !== undefined && { loginEmail: changes.email }),
+          ...(changes.pseudo !== undefined && { firstName: changes.pseudo }),
+        }),
+      },
     );
 
     if (!response.ok) {
       throw new AccountUpdateFailedError(await this.readErrorMessage(response));
     }
   }
+
   async deleteAccount(identityId: string): Promise<void> {
     const adminToken = await this.getAdminToken();
 
@@ -80,7 +85,7 @@ export class RainbowIdentityProvider implements IdentityProvider {
     );
 
     if (!response.ok) {
-      throw new AccountCreationFailedError(await this.readErrorMessage(response));
+      throw new AccountDeletionFailedError(await this.readErrorMessage(response));
     }
   }
 
@@ -150,7 +155,11 @@ export class RainbowIdentityProvider implements IdentityProvider {
   }
 
   private async readErrorMessage(response: Response): Promise<string> {
-    const error = (await response.json()) as RainbowErrorResponse;
+    const error = (await response.json().catch(() => null)) as RainbowErrorResponse | null;
+
+    if (!error?.errorDetails) {
+      return `HTTP ${response.status}`;
+    }
 
     if (typeof error.errorDetails === "string") {
       return error.errorDetails;
