@@ -25,3 +25,10 @@ export class UserNotFoundError extends Error {
     this.name = "UserNotFoundError";
   }
 }
+
+export class EmailAlreadyTakenError extends Error {
+  constructor() {
+    super("Cet email est déjà utilisé");
+    this.name = "EmailAlreadyTakenError";
+  }
+}

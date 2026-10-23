@@ -1,11 +1,17 @@
 import { Prisma } from "../../../generated/prisma/client";
 import { database } from "../../../lib/database";
 import type { User } from "../domain/user.entity";
-import { PseudoAlreadyTakenError, UserAlreadyExistsError } from "../domain/user.errors";
+import {
+  EmailAlreadyTakenError,
+  PseudoAlreadyTakenError,
+  UserAlreadyExistsError,
+  UserNotFoundError,
+} from "../domain/user.errors";
 import { toEntity, toPersistence } from "./user.mapper";
-import type { UserRepositoryPort } from "./user.repository.port";
+import type { UpdateProfileData, UserRepositoryPort } from "./user.repository.port";
 
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
+const RECORD_NOT_FOUND = "P2025";
 
 export class UserRepository implements UserRepositoryPort {
   async saveUser(user: User): Promise<User> {
@@ -30,6 +36,32 @@ export class UserRepository implements UserRepositoryPort {
   async findById(id: string): Promise<User | null> {
     const record = await database.user.findUnique({ where: { id } });
     return record ? toEntity(record) : null;
+  }
+
+  async updateProfile(userId: string, data: UpdateProfileData): Promise<User> {
+    try {
+      const record = await database.user.update({
+        where: { id: userId },
+        data: {
+          pseudo: data.pseudo,
+          email: data.email,
+          bio: data.bio,
+          urls: data.urls,
+        },
+      });
+      return toEntity(record);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === UNIQUE_CONSTRAINT_VIOLATION) {
+          const target = error.meta?.target;
+          const fields = Array.isArray(target) ? target : [target];
+          if (fields.includes("pseudo")) throw new PseudoAlreadyTakenError();
+          if (fields.includes("email")) throw new EmailAlreadyTakenError();
+        }
+        if (error.code === RECORD_NOT_FOUND) throw new UserNotFoundError();
+      }
+      throw error;
+    }
   }
 
   /**

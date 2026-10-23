@@ -3,6 +3,7 @@ export interface UserProps {
   email: string;
   pseudo: string;
   bio: string | null;
+  urls: string[];
   createdAt: Date;
   updatedAt: Date;
 }
