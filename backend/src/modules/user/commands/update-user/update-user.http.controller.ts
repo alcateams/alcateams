@@ -11,7 +11,10 @@ import {
 } from "../../domain/user.errors";
 import { toUserResponse } from "../../user.response";
 
-const updateUserUseCase = new UpdateUserUseCase(new UserRepository(), new RainbowIdentityProvider());
+const updateUserUseCase = new UpdateUserUseCase(
+  new UserRepository(),
+  new RainbowIdentityProvider(),
+);
 
 export const updateUserHandler = async (req: Request, res: Response) => {
   // `requireAuth` guarantees `identityId` is set; guard defensively in case it is mounted without it.
