@@ -4,7 +4,7 @@ import {
   CommunityNotFoundError,
   GeneralChannelAlreadyExistsError,
 } from "../../domain/community.errors";
-import { GENERAL_CHANNEL } from "../../domain/general-channel";
+import { GENERAL_CHANNEL, isReservedSubGroupName } from "../../domain/general-channel";
 import type { CommunityRepositoryPort } from "../../database/community.repository.port";
 import type { CommunityProviderPort } from "../../provider/community-provider.port";
 import type { BubbleMembershipSync } from "../../services/bubble-membership";
@@ -30,9 +30,21 @@ export class GetCommunityUseCase {
       input.communityId,
       input.userId,
     );
-    if (access.community.generalChannel) return access;
+    const { community } = access;
+    if (community.generalChannel) return access;
+    // A legacy sub-group already uses the reserved name: creating the channel would collide on
+    // every open, so leave the community as is.
+    if (community.subGroups.some((subGroup) => isReservedSubGroupName(subGroup.name))) {
+      return access;
+    }
 
-    return { ...access, community: await this.createGeneralChannel(access.community) };
+    try {
+      return { ...access, community: await this.createGeneralChannel(community) };
+    } catch (error) {
+      // The community is readable without its general channel; retry on the next open.
+      console.error(`[get-community] canal général de ${community.id} non créé :`, error);
+      return access;
+    }
   }
 
   /**

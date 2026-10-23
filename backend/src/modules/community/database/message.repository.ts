@@ -29,6 +29,15 @@ export class MessageRepository implements MessageRepositoryPort {
     subGroupId: string,
     { before, limit }: { before?: string; limit: number },
   ): Promise<MessagePage> {
+    if (before) {
+      // An unknown cursor, or one from another sub-group, yields an empty page rather than an error.
+      const cursor = await database.message.findFirst({
+        where: { id: before, subGroupId },
+        select: { id: true },
+      });
+      if (!cursor) return { messages: [], nextCursor: null };
+    }
+
     // Fetch one extra row to know whether an older page exists. The id tie-breaker keeps the
     // order stable for messages sharing the same timestamp.
     const records = await database.message.findMany({

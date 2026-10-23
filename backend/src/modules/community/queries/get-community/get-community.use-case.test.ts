@@ -83,12 +83,22 @@ describe("GetCommunityUseCase", () => {
     expect(community.generalChannel?.id).toBe("general");
   });
 
-  it("deletes the bubble and surfaces other persistence errors", async () => {
+  it("deletes the bubble and still opens the community when persistence fails", async () => {
     const { repository, provider, useCase } = setup(makeCommunity({ withGeneral: false }));
-    const dbError = new Error("db down");
-    repository.addSubGroup.mockRejectedValue(dbError);
+    repository.addSubGroup.mockRejectedValue(new Error("db down"));
 
-    await expect(useCase.execute(input)).rejects.toBe(dbError);
+    const { community } = await useCase.execute(input);
+
+    expect(community.generalChannel).toBeUndefined();
     expect(provider.deleteBubble).toHaveBeenCalledWith(ADMIN.token, "bubble-1");
+  });
+
+  it("still opens the community when Rainbow is down", async () => {
+    const { provider, useCase } = setup(makeCommunity({ withGeneral: false }));
+    provider.createBubble.mockRejectedValue(new Error("rainbow down"));
+
+    const { community } = await useCase.execute(input);
+
+    expect(community.id).toBe("community-1");
   });
 });

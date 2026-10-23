@@ -63,8 +63,6 @@ export const useSendMessage = (
     onMutate: async ({ text }) => {
       // Don't let an in-flight poll overwrite the optimistic message.
       await queryClient.cancelQueries({ queryKey })
-      const previous =
-        queryClient.getQueryData<InfiniteData<MessagePage>>(queryKey)
 
       const pending: Message = {
         id: `${PENDING_MESSAGE_PREFIX}${Date.now()}-${Math.random()}`,
@@ -83,10 +81,21 @@ export const useSendMessage = (
           ],
         }
       })
-      return { previous }
+      return { pendingId: pending.id }
     },
     onError: (_error, _input, context) => {
-      queryClient.setQueryData(queryKey, context?.previous)
+      // Drop only this send's optimistic message: others may still be in flight.
+      queryClient.setQueryData<InfiniteData<MessagePage>>(queryKey, (data) =>
+        data && {
+          ...data,
+          pages: data.pages.map((page) => ({
+            ...page,
+            messages: page.messages.filter(
+              (message) => message.id !== context?.pendingId
+            ),
+          })),
+        }
+      )
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   })

@@ -17,16 +17,15 @@ export function ChannelThread({ communityId, channel }: ChannelThreadProps) {
   const sendMessage = useSendMessage(communityId, channel.id, currentUser)
   const Icon = channel.kind === 'GENERAL' ? MessagesSquare : Hash
 
-  const handleSend = (text: string, restore: () => void) => {
-    sendMessage.mutate(
-      { text },
-      {
-        onError: (error) => {
-          handleServerError(error)
-          restore()
-        },
-      }
-    )
+  // mutateAsync settles per call, unlike mutate()'s per-call callbacks, which only fire for the
+  // latest send.
+  const handleSend = async (text: string, restore: () => void) => {
+    try {
+      await sendMessage.mutateAsync({ text })
+    } catch (error) {
+      handleServerError(error)
+      restore()
+    }
   }
 
   return (

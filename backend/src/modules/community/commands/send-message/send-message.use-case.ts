@@ -61,24 +61,31 @@ export class SendMessageUseCase {
     bubbleId: string,
     authorToken: string,
   ): Promise<void> {
+    let rainbowMessageId: string;
     try {
-      const rainbowMessageId = await this.messagingProvider.sendMessage(
-        authorToken,
-        message.authorId,
-        { bubbleId, text: message.text },
-      );
-      await this.messageRepository.updateRainbowSync(message.id, "SYNCED", rainbowMessageId);
+      rainbowMessageId = await this.messagingProvider.sendMessage(authorToken, message.authorId, {
+        bubbleId,
+        text: message.text,
+      });
     } catch (error) {
       console.error(`[send-message] envoi du message ${message.id} à Rainbow impossible :`, error);
-      await this.messageRepository
-        .updateRainbowSync(message.id, "FAILED")
-        .catch((updateError: unknown) => {
-          console.error(
-            `[send-message] statut du message ${message.id} non mis à jour :`,
-            updateError,
-          );
-        });
+      await this.setSyncStatus(message.id, "FAILED");
+      return;
     }
+    // Rainbow has the message: a failure here must not flag it as undelivered.
+    await this.setSyncStatus(message.id, "SYNCED", rainbowMessageId);
+  }
+
+  private async setSyncStatus(
+    messageId: string,
+    status: "SYNCED" | "FAILED",
+    rainbowMessageId?: string,
+  ): Promise<void> {
+    await this.messageRepository
+      .updateRainbowSync(messageId, status, rainbowMessageId)
+      .catch((error: unknown) => {
+        console.error(`[send-message] statut du message ${messageId} non mis à jour :`, error);
+      });
   }
 
   private async index(message: MessageProps, communityId: string): Promise<void> {

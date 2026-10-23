@@ -60,7 +60,22 @@ describe("SendMessageUseCase", () => {
     const { message, delivery } = await useCase.execute(input);
     await expect(delivery).resolves.toBeUndefined();
 
-    expect(messages.updateRainbowSync).toHaveBeenCalledWith(message.id, "FAILED");
+    expect(messages.updateRainbowSync).toHaveBeenCalledWith(message.id, "FAILED", undefined);
+  });
+
+  it("does not flag a message Rainbow accepted as FAILED when the SYNCED update fails", async () => {
+    const { messages, useCase } = setup();
+    messages.updateRainbowSync.mockRejectedValue(new Error("db down"));
+
+    const { message, delivery } = await useCase.execute(input);
+    await expect(delivery).resolves.toBeUndefined();
+
+    expect(messages.updateRainbowSync).toHaveBeenCalledTimes(1);
+    expect(messages.updateRainbowSync).toHaveBeenCalledWith(
+      message.id,
+      "SYNCED",
+      "rainbow-message-1",
+    );
   });
 
   it("indexes the message with its community, and survives an indexer failure", async () => {

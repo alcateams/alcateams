@@ -47,21 +47,20 @@ export class RainbowMessagingProvider implements MessagingProviderPort {
         "POST",
         `${S2S_CONNECTIONS_ENDPOINT}/${connectionId}/rooms/${encodeURIComponent(message.bubbleId)}/join`,
       );
-      const conversation = await this.request<{ id: string }>(
+      const conversationId = await this.requestId(
         userToken,
         "open conversation",
         "POST",
         `/api/rainbow/enduser/v1.0/users/${encodeURIComponent(userId)}/conversations`,
         { peerId: message.bubbleId, type: "room", mute: false },
       );
-      const sent = await this.request<{ id: string }>(
+      return await this.requestId(
         userToken,
         "send",
         "POST",
-        `${S2S_CONNECTIONS_ENDPOINT}/${connectionId}/conversations/${conversation.id}/messages`,
+        `${S2S_CONNECTIONS_ENDPOINT}/${connectionId}/conversations/${conversationId}/messages`,
         { message: { body: message.text, lang: "fr" } },
       );
-      return sent.id;
     } finally {
       await this.closeConnection(userToken, connectionId);
     }
@@ -69,15 +68,10 @@ export class RainbowMessagingProvider implements MessagingProviderPort {
 
   private async openConnection(userToken: string): Promise<string> {
     // Rainbow requires a callback URL for S2S events. We don't consume them (history is read
-    // from our own database), so any URL works when none is configured.
-    const connection = await this.request<{ id: string }>(
-      userToken,
-      "open connection",
-      "POST",
-      S2S_CONNECTIONS_ENDPOINT,
-      { connection: { callback_url: rainbowConfig.s2sCallbackUrl } },
-    );
-    return connection.id;
+    // from our own database).
+    return this.requestId(userToken, "open connection", "POST", S2S_CONNECTIONS_ENDPOINT, {
+      connection: { callback_url: rainbowConfig.s2sCallbackUrl },
+    });
   }
 
   private async closeConnection(userToken: string, connectionId: string): Promise<void> {
@@ -115,5 +109,26 @@ export class RainbowMessagingProvider implements MessagingProviderPort {
 
     const json = (await response.json().catch(() => null)) as RainbowData<T> | null;
     return json?.data as T;
+  }
+
+  /** Like `request`, for steps whose response must carry an id we then rely on. */
+  private async requestId(
+    userToken: string,
+    step: string,
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<string> {
+    const data = await this.request<{ id?: unknown } | undefined>(
+      userToken,
+      step,
+      method,
+      path,
+      body,
+    );
+    if (typeof data?.id !== "string" || data.id === "") {
+      throw new MessageDeliveryFailedError(step, "réponse Rainbow inattendue");
+    }
+    return data.id;
   }
 }
