@@ -6,12 +6,13 @@ import { toEntity, toPersistence } from "./community.mapper";
 import type { CommunityRepositoryPort } from "./community.repository.port";
 
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
+const COMMUNITY_NAME_CONSTRAINT = "Community_name_key";
 
 export class CommunityRepository implements CommunityRepositoryPort {
   async save(community: Community, creatorId: string): Promise<Community> {
     try {
       // A single nested create is wrapped in an implicit transaction by Prisma, so the
-      // community, its themes and the creator's moderator membership are written atomically.
+      // community, its sub-groups and the creator's moderator membership are written atomically.
       const record = await database.community.create({
         data: {
           ...toPersistence(community),
@@ -52,10 +53,22 @@ export class CommunityRepository implements CommunityRepositoryPort {
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === UNIQUE_CONSTRAINT_VIOLATION
     ) {
-      const target = error.meta?.target;
-      const fields = Array.isArray(target) ? target : [target];
-      if (fields.includes("name")) return new CommunityNameAlreadyTakenError();
+      if (this.isCommunityNameViolation(error)) return new CommunityNameAlreadyTakenError();
     }
     return error;
+  }
+
+  /**
+   * The `SubGroup (communityId, name)` constraint also involves a `name` column, so only match
+   * the community's own constraint (by name, or by model + field for driver adapters that
+   * report the target as columns).
+   */
+  private isCommunityNameViolation(error: Prisma.PrismaClientKnownRequestError): boolean {
+    const target = error.meta?.target;
+    if (target === COMMUNITY_NAME_CONSTRAINT) return true;
+    if (Array.isArray(target)) {
+      return error.meta?.modelName === "Community" && target.length === 1 && target[0] === "name";
+    }
+    return false;
   }
 }

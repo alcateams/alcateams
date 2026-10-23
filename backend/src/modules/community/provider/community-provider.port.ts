@@ -4,7 +4,7 @@ export interface BubbleDraft {
 }
 
 /**
- * Abstracts the "bulle" provider (Rainbow) used to back each community theme with a room.
+ * Abstracts the "bulle" provider (Rainbow) used to back each community sub-group with a room.
  * Operations run on behalf of the calling user so they become the bubble owner/moderator.
  */
 export interface CommunityProviderPort {

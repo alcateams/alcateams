@@ -2,7 +2,7 @@ import { type Request, type Response } from "express";
 import { CreateCommunityUseCase } from "./create-community.use-case";
 import { createCommunityDto } from "./create-community.request.dto";
 import { CommunityRepository } from "../../database/community.repository";
-import { RainbowCommunityProvider } from "../../rainbow-community-provider.adapter";
+import { RainbowCommunityProvider } from "../../provider/rainbow-community-provider.adapter";
 import { CommunityNameAlreadyTakenError } from "../../domain/community.errors";
 import { toCommunityResponse } from "../../community.response";
 

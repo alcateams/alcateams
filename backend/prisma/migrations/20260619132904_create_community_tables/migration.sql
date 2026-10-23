@@ -13,15 +13,16 @@ CREATE TABLE "Community" (
 );
 
 -- CreateTable
-CREATE TABLE "Theme" (
+CREATE TABLE "SubGroup" (
     "id" TEXT NOT NULL,
     "communityId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "theme" TEXT NOT NULL,
     "rainbowBubbleId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Theme_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "SubGroup_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -38,13 +39,13 @@ CREATE TABLE "CommunityMember" (
 CREATE UNIQUE INDEX "Community_name_key" ON "Community"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Theme_rainbowBubbleId_key" ON "Theme"("rainbowBubbleId");
+CREATE UNIQUE INDEX "SubGroup_rainbowBubbleId_key" ON "SubGroup"("rainbowBubbleId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Theme_communityId_name_key" ON "Theme"("communityId", "name");
+CREATE UNIQUE INDEX "SubGroup_communityId_name_key" ON "SubGroup"("communityId", "name");
 
 -- AddForeignKey
-ALTER TABLE "Theme" ADD CONSTRAINT "Theme_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SubGroup" ADD CONSTRAINT "SubGroup_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CommunityMember" ADD CONSTRAINT "CommunityMember_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;

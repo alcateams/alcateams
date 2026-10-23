@@ -2,7 +2,7 @@ import { Community } from "../../domain/community.entity";
 import { CommunityNameAlreadyTakenError } from "../../domain/community.errors";
 import type { CreateSubGroupProps } from "../../domain/community.types";
 import type { CommunityRepositoryPort } from "../../database/community.repository.port";
-import type { CommunityProviderPort } from "../../community-provider.port";
+import type { CommunityProviderPort } from "../../provider/community-provider.port";
 
 interface SubGroupInput {
   name: string;
@@ -26,6 +26,11 @@ export class CreateCommunityUseCase {
   async execute(input: CreateCommunityInput): Promise<Community> {
     await this.ensureNameIsAvailable(input.name);
     const subGroups = await this.createBubbles(input);
+    // Logged before persisting so a crash between bubble creation and `save` stays recoverable.
+    console.info(
+      "[create-community] bulles créées avant persistance :",
+      subGroups.map((subGroup) => subGroup.rainbowBubbleId),
+    );
     return this.persistOrRollback(input, subGroups);
   }
 
@@ -81,9 +86,15 @@ export class CreateCommunityUseCase {
   private async deleteBubbles(userToken: string, subGroups: CreateSubGroupProps[]): Promise<void> {
     await Promise.all(
       subGroups.map((subGroup) =>
-        this.communityProvider.deleteBubble(userToken, subGroup.rainbowBubbleId).catch(() => {
-          // Swallow rollback failures so the original error is surfaced.
-        }),
+        this.communityProvider
+          .deleteBubble(userToken, subGroup.rainbowBubbleId)
+          .catch((error: unknown) => {
+            // Don't mask the original error, but leave a trail for the orphaned bubble.
+            console.error(
+              `[create-community] échec du rollback de la bulle ${subGroup.rainbowBubbleId} :`,
+              error,
+            );
+          }),
       ),
     );
   }
