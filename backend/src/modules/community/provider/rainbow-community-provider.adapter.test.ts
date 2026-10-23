@@ -7,6 +7,7 @@ vi.mock("../../../config/rainbow.config", () => ({
 import {
   BubbleCreationFailedError,
   BubbleMemberAdditionFailedError,
+  BubbleMemberRemovalFailedError,
 } from "./community-provider.errors";
 import { RainbowCommunityProvider } from "./rainbow-community-provider.adapter";
 
@@ -72,5 +73,38 @@ describe("RainbowCommunityProvider", () => {
     await expect(
       new RainbowCommunityProvider().addMember("t", "room-1", "user-1", "user"),
     ).rejects.toThrow(new BubbleMemberAdditionFailedError("Access denied"));
+  });
+
+  it("unsubscribes then deletes a member from the room", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json({ data: {} }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new RainbowCommunityProvider().removeMember("t", "room-1", "user-1");
+
+    const memberUrl = "https://rainbow.test/api/rainbow/enduser/v1.0/rooms/room-1/users/user-1";
+    expect(fetchMock.mock.calls.map(([url, init]) => [url, init?.method])).toEqual([
+      [memberUrl, "PUT"],
+      [memberUrl, "DELETE"],
+    ]);
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      status: "unsubscribed",
+    });
+  });
+
+  it("treats a user who is not in the room (404) as already removed", async () => {
+    const fetchMock = stubFetch(Response.json({ errorDetails: "not found" }, { status: 404 }));
+
+    await expect(
+      new RainbowCommunityProvider().removeMember("t", "room-1", "user-1"),
+    ).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports other failures when removing a member", async () => {
+    stubFetch(Response.json({ errorDetails: "Access denied" }, { status: 403 }));
+
+    await expect(
+      new RainbowCommunityProvider().removeMember("t", "room-1", "user-1"),
+    ).rejects.toThrow(new BubbleMemberRemovalFailedError("Access denied"));
   });
 });

@@ -1,75 +1,87 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Community } from "../../domain/community.entity";
 import {
   CommunityNotFoundError,
   LastModeratorError,
-  NotMemberError,
+  NotCommunityMemberError,
 } from "../../domain/community.errors";
-import type { CommunityRepositoryPort } from "../../database/community.repository.port";
+import { makeCommunity, makeCommunityRepository } from "../../testing/test-doubles";
 import { LeaveCommunityUseCase } from "./leave-community.use-case";
 
-const input = { communityId: "community-1", userId: "user-1" };
+const input = { communityId: "community-1", userId: "u1" };
 
-const makeRepository = () =>
-  ({
-    save: vi.fn(async (community: Community) => community),
-    findByName: vi.fn(async () => null),
-    findById: vi.fn<CommunityRepositoryPort["findById"]>(async () => ({}) as Community),
-    listForUser: vi.fn(async () => []),
-    search: vi.fn(async () => []),
-    addMember: vi.fn(async () => {}),
-    findMemberRole: vi.fn<CommunityRepositoryPort["findMemberRole"]>(async () => "MEMBER"),
-    countModerators: vi.fn(async () => 1),
-    removeMember: vi.fn(async () => {}),
-  }) satisfies CommunityRepositoryPort;
+const makeSync = () => ({ removeMembers: vi.fn(async () => {}) });
+
+const makeMemberRepository = () => {
+  const repository = makeCommunityRepository();
+  repository.findById.mockResolvedValue(makeCommunity());
+  return repository;
+};
 
 describe("LeaveCommunityUseCase", () => {
-  it("removes a member from the community", async () => {
-    const repository = makeRepository();
+  it("removes the membership, then the user from every channel's bubble", async () => {
+    const repository = makeMemberRepository();
+    const sync = makeSync();
 
-    await new LeaveCommunityUseCase(repository).execute(input);
+    await new LeaveCommunityUseCase(repository, sync).execute(input);
 
-    expect(repository.removeMember).toHaveBeenCalledWith("community-1", "user-1");
+    expect(repository.removeMember).toHaveBeenCalledWith("community-1", "u1");
+    expect(sync.removeMembers).toHaveBeenCalledWith(["bubble-general", "bubble-sub-1"], ["u1"]);
   });
 
   it("rejects an unknown community", async () => {
-    const repository = makeRepository();
-    repository.findById.mockResolvedValue(null);
+    const repository = makeCommunityRepository();
+    const sync = makeSync();
 
-    await expect(new LeaveCommunityUseCase(repository).execute(input)).rejects.toThrow(
+    await expect(new LeaveCommunityUseCase(repository, sync).execute(input)).rejects.toThrow(
       CommunityNotFoundError,
     );
     expect(repository.removeMember).not.toHaveBeenCalled();
+    expect(sync.removeMembers).not.toHaveBeenCalled();
   });
 
   it("rejects a user who is not a member", async () => {
-    const repository = makeRepository();
+    const repository = makeMemberRepository();
     repository.findMemberRole.mockResolvedValue(null);
+    const sync = makeSync();
 
-    await expect(new LeaveCommunityUseCase(repository).execute(input)).rejects.toThrow(
-      NotMemberError,
+    await expect(new LeaveCommunityUseCase(repository, sync).execute(input)).rejects.toThrow(
+      NotCommunityMemberError,
     );
     expect(repository.removeMember).not.toHaveBeenCalled();
+    expect(sync.removeMembers).not.toHaveBeenCalled();
   });
 
   it("prevents the last moderator from leaving", async () => {
-    const repository = makeRepository();
+    const repository = makeMemberRepository();
     repository.findMemberRole.mockResolvedValue("MODERATOR");
     repository.countModerators.mockResolvedValue(1);
+    const sync = makeSync();
 
-    await expect(new LeaveCommunityUseCase(repository).execute(input)).rejects.toThrow(
+    await expect(new LeaveCommunityUseCase(repository, sync).execute(input)).rejects.toThrow(
       LastModeratorError,
     );
     expect(repository.removeMember).not.toHaveBeenCalled();
+    expect(sync.removeMembers).not.toHaveBeenCalled();
   });
 
   it("lets a moderator leave when another moderator remains", async () => {
-    const repository = makeRepository();
+    const repository = makeMemberRepository();
     repository.findMemberRole.mockResolvedValue("MODERATOR");
     repository.countModerators.mockResolvedValue(2);
 
-    await new LeaveCommunityUseCase(repository).execute(input);
+    await new LeaveCommunityUseCase(repository, makeSync()).execute(input);
 
-    expect(repository.removeMember).toHaveBeenCalledWith("community-1", "user-1");
+    expect(repository.removeMember).toHaveBeenCalledWith("community-1", "u1");
+  });
+
+  it("doesn't touch the bubbles when the membership was already removed", async () => {
+    const repository = makeMemberRepository();
+    repository.removeMember.mockRejectedValue(new NotCommunityMemberError());
+    const sync = makeSync();
+
+    await expect(new LeaveCommunityUseCase(repository, sync).execute(input)).rejects.toThrow(
+      NotCommunityMemberError,
+    );
+    expect(sync.removeMembers).not.toHaveBeenCalled();
   });
 });

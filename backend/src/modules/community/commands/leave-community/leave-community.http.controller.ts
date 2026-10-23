@@ -4,10 +4,16 @@ import { CommunityRepository } from "../../database/community.repository";
 import {
   CommunityNotFoundError,
   LastModeratorError,
-  NotMemberError,
+  NotCommunityMemberError,
 } from "../../domain/community.errors";
+import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
+import { RainbowCommunityProvider } from "../../provider/rainbow-community-provider.adapter";
+import { BubbleMembershipSync } from "../../services/bubble-membership";
 
-const leaveCommunityUseCase = new LeaveCommunityUseCase(new CommunityRepository());
+const leaveCommunityUseCase = new LeaveCommunityUseCase(
+  new CommunityRepository(),
+  new BubbleMembershipSync(new RainbowCommunityProvider(), new RainbowIdentityProvider()),
+);
 
 export const leaveCommunityHandler = async (req: Request, res: Response) => {
   // `requireAuth` guarantees `identityId` is set; guard defensively in case it is mounted without it.
@@ -27,7 +33,7 @@ export const leaveCommunityHandler = async (req: Request, res: Response) => {
     await leaveCommunityUseCase.execute({ communityId, userId: identityId });
     res.status(204).end();
   } catch (error) {
-    if (error instanceof CommunityNotFoundError || error instanceof NotMemberError) {
+    if (error instanceof CommunityNotFoundError || error instanceof NotCommunityMemberError) {
       res.status(404).json({ error: error.message });
       return;
     }
