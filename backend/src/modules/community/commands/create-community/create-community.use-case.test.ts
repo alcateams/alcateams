@@ -29,7 +29,10 @@ const makeRepository = () =>
   ({
     save: vi.fn(async (community: Community) => community),
     findByName: vi.fn<CommunityRepositoryPort["findByName"]>(async () => null),
+    findById: vi.fn(async () => null),
     listForUser: vi.fn(async () => []),
+    search: vi.fn(async () => []),
+    addMember: vi.fn(async () => {}),
   }) satisfies CommunityRepositoryPort;
 
 describe("CreateCommunityUseCase", () => {
