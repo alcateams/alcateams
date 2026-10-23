@@ -1,6 +1,8 @@
+import type { AdminSessionPort } from "../../../auth/admin-session.port";
 import { Community } from "../../domain/community.entity";
 import { CommunityNameAlreadyTakenError } from "../../domain/community.errors";
-import type { CreateSubGroupProps } from "../../domain/community.types";
+import type { CreateSubGroupProps, SubGroupKind } from "../../domain/community.types";
+import { GENERAL_CHANNEL } from "../../domain/general-channel";
 import type { CommunityRepositoryPort } from "../../database/community.repository.port";
 import type { CommunityProviderPort } from "../../provider/community-provider.port";
 
@@ -8,6 +10,8 @@ interface SubGroupInput {
   name: string;
   theme: string;
 }
+
+type SubGroupDraft = SubGroupInput & { kind: SubGroupKind };
 
 interface CreateCommunityInput {
   name: string;
@@ -21,6 +25,7 @@ export class CreateCommunityUseCase {
   constructor(
     private readonly communityRepository: CommunityRepositoryPort,
     private readonly communityProvider: CommunityProviderPort,
+    private readonly adminSession: AdminSessionPort,
   ) {}
 
   async execute(input: CreateCommunityInput): Promise<Community> {
@@ -40,19 +45,32 @@ export class CreateCommunityUseCase {
   }
 
   /**
-   * Provisions one Rainbow bubble per sub-group on behalf of the creator (who thus owns each
-   * bubble). If any bubble fails, the ones already created are rolled back before propagating.
+   * Provisions one Rainbow bubble for the general channel and one per sub-group on behalf of the
+   * creator (who thus owns each bubble). The admin account is made moderator of each bubble so
+   * the server can add the members who join later. If any step fails, the bubbles already
+   * created are rolled back before propagating.
    */
   private async createBubbles(input: CreateCommunityInput): Promise<CreateSubGroupProps[]> {
+    const admin = await this.adminSession.getAdminSession();
+    const drafts: SubGroupDraft[] = [
+      { ...GENERAL_CHANNEL, kind: "GENERAL" },
+      ...input.subGroups.map((subGroup) => ({ ...subGroup, kind: "THEMATIC" as const })),
+    ];
     const created: CreateSubGroupProps[] = [];
 
     try {
-      for (const subGroup of input.subGroups) {
+      for (const draft of drafts) {
         const rainbowBubbleId = await this.communityProvider.createBubble(input.creatorToken, {
-          name: subGroup.name,
-          topic: subGroup.theme,
+          name: draft.kind === "GENERAL" ? `${input.name} · ${draft.name}` : draft.name,
+          topic: draft.theme,
         });
-        created.push({ name: subGroup.name, theme: subGroup.theme, rainbowBubbleId });
+        created.push({ ...draft, rainbowBubbleId });
+        await this.communityProvider.addMember(
+          input.creatorToken,
+          rainbowBubbleId,
+          admin.userId,
+          "moderator",
+        );
       }
       return created;
     } catch (error) {

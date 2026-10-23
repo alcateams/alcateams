@@ -1,4 +1,5 @@
 import { type Request, type Response } from "express";
+import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
 import { CreateCommunityUseCase } from "./create-community.use-case";
 import { createCommunityDto } from "./create-community.request.dto";
 import { CommunityRepository } from "../../database/community.repository";
@@ -9,6 +10,7 @@ import { toCommunityResponse } from "../../community.response";
 const createCommunityUseCase = new CreateCommunityUseCase(
   new CommunityRepository(),
   new RainbowCommunityProvider(),
+  new RainbowIdentityProvider(),
 );
 
 export const createCommunityHandler = async (req: Request, res: Response) => {

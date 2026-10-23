@@ -6,4 +6,5 @@ export const rainbowConfig = {
   appSecret: env.RAINBOW_APP_SECRET,
   adminEmail: env.RAINBOW_ADMIN_EMAIL,
   adminPassword: env.RAINBOW_ADMIN_PASSWORD,
+  s2sCallbackUrl: env.RAINBOW_S2S_CALLBACK_URL,
 };

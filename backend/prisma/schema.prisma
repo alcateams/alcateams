@@ -20,6 +20,7 @@ model User {
   updatedAt     DateTime          @updatedAt
   communities   CommunityMember[]
   notifications Notification[]
+  messages      Message[]
 }
 
 enum CommunityRole {
@@ -59,17 +60,25 @@ model Notification {
   @@index([userId, createdAt])
 }
 
+enum SubGroupKind {
+  // The community-wide channel ("Général"), one per community.
+  GENERAL
+  THEMATIC
+}
+
 // A thematic sub-group ("sous-groupe") of a community, backed by one Rainbow bubble
 // (the "bulle": a place of exchange around a precise subject).
 model SubGroup {
-  id              String    @id @default(uuid())
+  id              String       @id @default(uuid())
   communityId     String
   name            String
   theme           String
-  rainbowBubbleId String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  kind            SubGroupKind @default(THEMATIC)
+  rainbowBubbleId String       @unique
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  community       Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  messages        Message[]
 
   @@unique([communityId, name])
 }
@@ -83,4 +92,26 @@ model CommunityMember {
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([communityId, userId])
+}
+
+enum RainbowSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+}
+
+// A message posted in a sub-group. Postgres is the source of truth; each message is then
+// mirrored to the sub-group's Rainbow bubble, and `rainbowSyncStatus` tracks that mirroring.
+model Message {
+  id                String            @id @default(uuid())
+  subGroupId        String
+  authorId          String
+  text              String
+  rainbowMessageId  String?
+  rainbowSyncStatus RainbowSyncStatus @default(PENDING)
+  createdAt         DateTime          @default(now())
+  subGroup          SubGroup          @relation(fields: [subGroupId], references: [id], onDelete: Cascade)
+  author            User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([subGroupId, createdAt])
 }

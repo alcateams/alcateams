@@ -4,7 +4,10 @@ vi.mock("../../../config/rainbow.config", () => ({
   rainbowConfig: { host: "https://rainbow.test" },
 }));
 
-import { BubbleCreationFailedError } from "./community-provider.errors";
+import {
+  BubbleCreationFailedError,
+  BubbleMemberAdditionFailedError,
+} from "./community-provider.errors";
 import { RainbowCommunityProvider } from "./rainbow-community-provider.adapter";
 
 const stubFetch = (response: Response) => {
@@ -39,5 +42,35 @@ describe("RainbowCommunityProvider", () => {
     await expect(
       new RainbowCommunityProvider().createBubble("t", { name: "n", topic: "x" }),
     ).rejects.toThrow("a, b");
+  });
+
+  it("adds a member directly to the room, without an invitation", async () => {
+    const fetchMock = stubFetch(Response.json({ data: {} }));
+
+    await new RainbowCommunityProvider().addMember("t", "room-1", "user-1", "moderator");
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(url).toBe("https://rainbow.test/api/rainbow/enduser/v1.0/rooms/room-1/users");
+    expect(JSON.parse(String(init?.body))).toMatchObject({
+      userId: "user-1",
+      privilege: "moderator",
+      status: "accepted",
+    });
+  });
+
+  it("treats an existing member (409) as already added", async () => {
+    stubFetch(Response.json({ errorDetails: "already member" }, { status: 409 }));
+
+    await expect(
+      new RainbowCommunityProvider().addMember("t", "room-1", "user-1", "user"),
+    ).resolves.toBeUndefined();
+  });
+
+  it("reports other failures when adding a member", async () => {
+    stubFetch(Response.json({ errorDetails: "Access denied" }, { status: 403 }));
+
+    await expect(
+      new RainbowCommunityProvider().addMember("t", "room-1", "user-1", "user"),
+    ).rejects.toThrow(new BubbleMemberAdditionFailedError("Access denied"));
   });
 });

@@ -1,5 +1,9 @@
 import type { Community } from "../domain/community.entity";
-import type { CommunityMemberDetails, CommunityRole } from "../domain/community.types";
+import type {
+  CommunityMemberDetails,
+  CommunityRole,
+  CreateSubGroupProps,
+} from "../domain/community.types";
 
 /** A community the user belongs to, paired with the role the user holds in it. */
 export interface CommunityWithRole {
@@ -21,6 +25,7 @@ export interface CommunityRepositoryPort {
   addMember(communityId: string, userId: string): Promise<void>;
   /** Returns the role the user holds in the community, or `null` if they are not a member. */
   findMemberRole(communityId: string, userId: string): Promise<CommunityRole | null>;
+  listMemberIds(communityId: string): Promise<string[]>;
   /** Lists every member of the community with their public identity (moderator-only data). */
   listMembers(communityId: string): Promise<CommunityMemberDetails[]>;
   /** Counts how many members hold the `MODERATOR` role in the community. */
@@ -34,4 +39,9 @@ export interface CommunityRepositoryPort {
     targetUserId: string,
     newRole: CommunityRole,
   ): Promise<void>;
+  /**
+   * Adds a sub-group to an existing community. Throws `GeneralChannelAlreadyExistsError` if a
+   * concurrent request already created the community's general channel.
+   */
+  addSubGroup(communityId: string, subGroup: CreateSubGroupProps): Promise<Community>;
 }

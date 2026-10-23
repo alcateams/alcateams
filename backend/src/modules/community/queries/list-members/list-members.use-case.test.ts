@@ -33,9 +33,11 @@ const makeRepository = (options: {
     search: vi.fn(async () => []),
     addMember: vi.fn(),
     findMemberRole: vi.fn(async () => options.callerRole ?? null),
+    listMemberIds: vi.fn(async () => []),
     listMembers: vi.fn(async () => members),
     countModerators: vi.fn(async () => 1),
     changeRoleAndNotify: vi.fn(),
+    addSubGroup: vi.fn(),
   }) satisfies CommunityRepositoryPort;
 
 const run = (repository: CommunityRepositoryPort) =>

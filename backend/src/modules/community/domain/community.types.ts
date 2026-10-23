@@ -15,10 +15,14 @@ export interface CommunityMemberDetails {
   joinedAt: Date;
 }
 
+/** `GENERAL` is the community-wide channel (one per community), `THEMATIC` a regular sub-group. */
+export type SubGroupKind = "GENERAL" | "THEMATIC";
+
 export interface SubGroupProps {
   id: string;
   name: string;
   theme: string;
+  kind: SubGroupKind;
   rainbowBubbleId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +40,7 @@ export interface CommunityProps {
 export interface CreateSubGroupProps {
   name: string;
   theme: string;
+  kind: SubGroupKind;
   rainbowBubbleId: string;
 }
 

@@ -8,6 +8,7 @@ import {
   AuthenticationFailedError,
   TokenValidationFailedError,
 } from "./auth.errors";
+import type { AdminSession, AdminSessionPort } from "./admin-session.port";
 import type { AccountChanges, IdentityProvider } from "./identity-provider.port";
 
 type RainbowUser = { id: string };
@@ -20,7 +21,7 @@ type RainbowErrorResponse = { errorDetails: string | { msg: string }[] };
 // Renew the cached admin token this many milliseconds before its real expiry.
 const ADMIN_TOKEN_EXPIRY_MARGIN_MS = 60_000;
 
-export class RainbowIdentityProvider implements IdentityProvider {
+export class RainbowIdentityProvider implements IdentityProvider, AdminSessionPort {
   private cachedAdminToken: { token: string; expiresAt: number } | null = null;
 
   async isEmailAvailable(email: string): Promise<boolean> {
@@ -121,6 +122,11 @@ export class RainbowIdentityProvider implements IdentityProvider {
     // `jwtDecode` does NOT verify the signature, so this decode must never replace the call above.
     const tokenPayload = jwtDecode<RainbowTokenPayload>(token);
     return tokenPayload.user.id;
+  }
+
+  async getAdminSession(): Promise<AdminSession> {
+    const token = await this.getAdminToken();
+    return { token, userId: jwtDecode<RainbowTokenPayload>(token).user.id };
   }
 
   /**

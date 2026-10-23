@@ -4,7 +4,10 @@ import { requireAuth } from "../auth/require-auth.middleware";
 import { changeMemberRoleHandler } from "./commands/change-member-role/change-member-role.http.controller";
 import { createCommunityHandler } from "./commands/create-community/create-community.http.controller";
 import { joinCommunityHandler } from "./commands/join-community/join-community.http.controller";
+import { sendMessageHandler } from "./commands/send-message/send-message.http.controller";
+import { getCommunityHandler } from "./queries/get-community/get-community.http.controller";
 import { listMembersHandler } from "./queries/list-members/list-members.http.controller";
+import { listMessagesHandler } from "./queries/list-messages/list-messages.http.controller";
 import { listMyCommunitiesHandler } from "./queries/list-my-communities/list-my-communities.http.controller";
 import { searchCommunitiesHandler } from "./queries/search-communities/search-communities.http.controller";
 
@@ -17,9 +20,20 @@ communityRouter.post("/", requireAuth(identityProvider), createCommunityHandler)
 communityRouter.get("/me", requireAuth(identityProvider), listMyCommunitiesHandler);
 communityRouter.get("/search", requireAuth(identityProvider), searchCommunitiesHandler);
 communityRouter.post("/:id/join", requireAuth(identityProvider), joinCommunityHandler);
+communityRouter.get("/:id", requireAuth(identityProvider), getCommunityHandler);
 communityRouter.get("/:id/members", requireAuth(identityProvider), listMembersHandler);
 communityRouter.patch(
   "/:id/members/:userId/role",
   requireAuth(identityProvider),
   changeMemberRoleHandler,
+);
+communityRouter.get(
+  "/:id/subgroups/:subGroupId/messages",
+  requireAuth(identityProvider),
+  listMessagesHandler,
+);
+communityRouter.post(
+  "/:id/subgroups/:subGroupId/messages",
+  requireAuth(identityProvider),
+  sendMessageHandler,
 );
