@@ -16,7 +16,7 @@ type RainbowSessionResponse = { token: string };
 type RainbowTokenPayload = { user: { id: string }; exp?: number };
 type RainbowErrorResponse = { errorDetails: string | { msg: string }[] };
 
-// Renew the cached admin to  AccountUpdateFailedError,ken this many milliseconds before its real expiry.
+// Renew the cached admin token this many milliseconds before its real expiry.
 const ADMIN_TOKEN_EXPIRY_MARGIN_MS = 60_000;
 
 export class RainbowIdentityProvider implements IdentityProvider {
