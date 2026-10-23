@@ -18,3 +18,10 @@ export class BubbleMemberAdditionFailedError extends Error {
     this.name = "BubbleMemberAdditionFailedError";
   }
 }
+
+export class BubbleMemberRemovalFailedError extends Error {
+  constructor(cause: string) {
+    super(`Impossible de retirer le membre de la bulle : ${cause}`);
+    this.name = "BubbleMemberRemovalFailedError";
+  }
+}

@@ -20,4 +20,6 @@ export interface CommunityProviderPort {
     userId: string,
     privilege: BubblePrivilege,
   ): Promise<void>;
+  /** Removes the user from the bubble. Succeeds if they are not in it. */
+  removeMember(moderatorToken: string, bubbleId: string, userId: string): Promise<void>;
 }
