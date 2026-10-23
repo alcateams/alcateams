@@ -1,28 +1,40 @@
 import { rainbowConfig } from "../../../config/rainbow.config";
-import type { BubbleDraft, CommunityProviderPort } from "./community-provider.port";
-import { BubbleCreationFailedError, BubbleDeletionFailedError } from "./community-provider.errors";
+import type {
+  BubbleDraft,
+  BubblePrivilege,
+  CommunityProviderPort,
+} from "./community-provider.port";
+import {
+  BubbleCreationFailedError,
+  BubbleDeletionFailedError,
+  BubbleMemberAdditionFailedError,
+} from "./community-provider.errors";
+import {
+  RAINBOW_REQUEST_TIMEOUT_MS,
+  rainbowUserHeaders,
+  readRainbowErrorMessage,
+} from "./rainbow-http";
 
 type RainbowCreatedRoomResponse = { data: { id: string } };
-type RainbowErrorResponse = { errorDetails: string | { msg: string }[] };
 
 const ROOMS_ENDPOINT = "/api/rainbow/enduser/v1.0/rooms";
-const REQUEST_TIMEOUT_MS = 10_000;
+const CONFLICT = 409;
 
 /**
- * Rainbow-backed implementation of the community bubble provider. Each call uses the caller's
- * own Rainbow token, so Rainbow assigns the caller as the room owner (i.e. moderator/admin).
+ * Rainbow-backed implementation of the community bubble provider. Each call uses the given
+ * token, so a bubble created with a user's token is owned (i.e. moderated) by that user.
  */
 export class RainbowCommunityProvider implements CommunityProviderPort {
   async createBubble(userToken: string, bubble: BubbleDraft): Promise<string> {
     const response = await fetch(`${rainbowConfig.host}${ROOMS_ENDPOINT}`, {
       method: "POST",
-      headers: { ...this.userHeaders(userToken), "Content-Type": "application/json" },
+      headers: { ...rainbowUserHeaders(userToken), "Content-Type": "application/json" },
       body: JSON.stringify({ name: bubble.name, topic: bubble.topic, visibility: "private" }),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: AbortSignal.timeout(RAINBOW_REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
-      throw new BubbleCreationFailedError(await this.readErrorMessage(response));
+      throw new BubbleCreationFailedError(await readRainbowErrorMessage(response));
     }
 
     const createdRoom = (await response.json()) as RainbowCreatedRoomResponse;
@@ -34,38 +46,37 @@ export class RainbowCommunityProvider implements CommunityProviderPort {
       `${rainbowConfig.host}${ROOMS_ENDPOINT}/${encodeURIComponent(bubbleId)}`,
       {
         method: "DELETE",
-        headers: this.userHeaders(userToken),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        headers: rainbowUserHeaders(userToken),
+        signal: AbortSignal.timeout(RAINBOW_REQUEST_TIMEOUT_MS),
       },
     );
 
     if (!response.ok) {
-      throw new BubbleDeletionFailedError(await this.readErrorMessage(response));
+      throw new BubbleDeletionFailedError(await readRainbowErrorMessage(response));
     }
   }
 
-  private userHeaders(userToken: string) {
-    return {
-      Authorization: `Bearer ${userToken}`,
-      Accept: "application/json",
-    };
-  }
+  async addMember(
+    moderatorToken: string,
+    bubbleId: string,
+    userId: string,
+    privilege: BubblePrivilege,
+  ): Promise<void> {
+    const response = await fetch(
+      `${rainbowConfig.host}${ROOMS_ENDPOINT}/${encodeURIComponent(bubbleId)}/users`,
+      {
+        method: "POST",
+        headers: { ...rainbowUserHeaders(moderatorToken), "Content-Type": "application/json" },
+        // `accepted` adds the user directly instead of sending them an invitation.
+        body: JSON.stringify({ userId, privilege, status: "accepted", reason: "AlcaTeams" }),
+        signal: AbortSignal.timeout(RAINBOW_REQUEST_TIMEOUT_MS),
+      },
+    );
 
-  /** Error bodies are not guaranteed to be JSON (e.g. an HTML 502 from a proxy). */
-  private async readErrorMessage(response: Response): Promise<string> {
-    const fallback = `HTTP ${response.status}`;
-    const text = await response.text().catch(() => "");
-
-    try {
-      const error = JSON.parse(text) as Partial<RainbowErrorResponse>;
-      if (typeof error.errorDetails === "string") return error.errorDetails;
-      if (Array.isArray(error.errorDetails)) {
-        return error.errorDetails.map((detail) => detail.msg).join(", ") || fallback;
-      }
-    } catch {
-      // Not JSON: fall through to the status-based message.
+    // Already in the bubble: nothing to do.
+    if (response.status === CONFLICT) return;
+    if (!response.ok) {
+      throw new BubbleMemberAdditionFailedError(await readRainbowErrorMessage(response));
     }
-
-    return fallback;
   }
 }

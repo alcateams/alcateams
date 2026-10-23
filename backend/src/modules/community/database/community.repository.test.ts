@@ -11,7 +11,7 @@ import { CommunityRepository } from "./community.repository";
 const community = Community.create({
   name: "Chess club",
   description: "desc",
-  subGroups: [{ name: "Openings", theme: "Theory", rainbowBubbleId: "b1" }],
+  subGroups: [{ name: "Openings", theme: "Theory", kind: "THEMATIC", rainbowBubbleId: "b1" }],
 });
 
 const p2002 = (meta: Record<string, unknown>) =>
