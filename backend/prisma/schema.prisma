@@ -19,7 +19,6 @@ model User {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   communities CommunityMember[]
-  communities CommunityMember[]
 }
 
 enum CommunityRole {
