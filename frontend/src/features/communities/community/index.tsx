@@ -11,6 +11,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { useCommunity } from '../api/get-community'
 import { ChannelList, ChannelSelect } from './components/channel-list'
 import { ChannelThread } from './components/channel-thread'
+import { CommunitySearchForm } from './components/community-search-form'
 
 const route = getRouteApi('/_authenticated/communities/$communityId')
 
@@ -41,13 +42,13 @@ export function CommunityPage() {
       </Header>
 
       <Main fixed className='flex flex-col gap-4'>
-        <div className='flex flex-none items-center gap-2'>
+        <div className='flex flex-none flex-wrap items-center gap-2'>
           <Button asChild size='icon' variant='ghost' className='-ms-2'>
             <Link to='/communities' aria-label='Retour aux communautés'>
               <ArrowLeft className='rtl:rotate-180' />
             </Link>
           </Button>
-          <div className='min-w-0'>
+          <div className='min-w-0 flex-1'>
             <h2 className='truncate text-2xl font-bold tracking-tight'>
               {community?.name ?? 'Communauté'}
             </h2>
@@ -57,6 +58,14 @@ export function CommunityPage() {
               </p>
             )}
           </div>
+          {community && channel && (
+            <CommunitySearchForm
+              // Reset the scope when switching channels.
+              key={channel.id}
+              communityId={community.id}
+              channel={channel}
+            />
+          )}
         </div>
 
         {isLoading && (

@@ -6,6 +6,7 @@ import type { CommunityRepositoryPort } from "../database/community.repository.p
 import type { MessageRepositoryPort } from "../database/message.repository.port";
 import type { CommunityProviderPort } from "../provider/community-provider.port";
 import type { MessageIndexerPort } from "../provider/message-indexer.port";
+import type { MessageSearchPort } from "../provider/message-search.port";
 import type { MessagingProviderPort } from "../provider/messaging-provider.port";
 
 export const ADMIN = { token: "admin-token", userId: "admin" };
@@ -27,7 +28,7 @@ export const makeCommunityRepository = () =>
     save: vi.fn(async (community: Community) => community),
     findByName: vi.fn<CommunityRepositoryPort["findByName"]>(async () => null),
     findById: vi.fn<CommunityRepositoryPort["findById"]>(async () => null),
-    listForUser: vi.fn(async () => []),
+    listForUser: vi.fn<CommunityRepositoryPort["listForUser"]>(async () => []),
     search: vi.fn(async () => []),
     addMember: vi.fn(async () => {}),
     findMemberRole: vi.fn<CommunityRepositoryPort["findMemberRole"]>(async () => "MEMBER"),
@@ -64,12 +65,21 @@ export const makeMessagingProvider = () =>
 export const makeMessageIndexer = () =>
   ({ index: vi.fn<MessageIndexerPort["index"]>(async () => {}) }) satisfies MessageIndexerPort;
 
+export const makeMessageSearch = () =>
+  ({
+    search: vi.fn<MessageSearchPort["search"]>(async () => ({ hits: [], total: 0 })),
+  }) satisfies MessageSearchPort;
+
 const AT = new Date("2026-10-01T00:00:00Z");
 
-export const makeCommunity = ({ withGeneral = true } = {}) =>
+export const makeCommunity = ({
+  withGeneral = true,
+  id = "community-1",
+  name = "Chess club",
+} = {}) =>
   new Community({
-    id: "community-1",
-    name: "Chess club",
+    id,
+    name,
     description: "All about chess",
     subGroups: [
       ...(withGeneral

@@ -14,7 +14,8 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "search:reindex": "tsx src/scripts/reindex-messages.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",

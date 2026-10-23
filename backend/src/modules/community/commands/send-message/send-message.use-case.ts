@@ -89,7 +89,7 @@ export class SendMessageUseCase {
   }
 
   private async index(message: MessageProps, communityId: string): Promise<void> {
-    await this.messageIndexer.index({ ...message, communityId }).catch((error: unknown) => {
+    await this.messageIndexer.index([{ ...message, communityId }]).catch((error: unknown) => {
       console.error(`[send-message] indexation du message ${message.id} impossible :`, error);
     });
   }
