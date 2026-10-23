@@ -10,6 +10,7 @@ export class User {
       email: props.email,
       pseudo: props.pseudo,
       bio: null,
+      urls: [],
       createdAt: now,
       updatedAt: now,
     });
@@ -29,6 +30,10 @@ export class User {
 
   get bio(): string | null {
     return this.props.bio;
+  }
+
+  get urls(): string[] {
+    return this.props.urls;
   }
 
   get createdAt(): Date {

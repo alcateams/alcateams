@@ -8,6 +8,8 @@ declare global {
     interface Request {
       /** Identity-provider user id, set by `requireAuth` once the token is validated. */
       identityId?: string;
+      /** The validated identity-provider token, kept for downstream calls made on the user's behalf. */
+      identityToken?: string;
     }
   }
 }
@@ -30,6 +32,7 @@ export function requireAuth(identityProvider: IdentityProvider) {
 
     try {
       req.identityId = await identityProvider.validateToken(token);
+      req.identityToken = token;
       next();
     } catch (error) {
       if (error instanceof TokenValidationFailedError) {

@@ -12,12 +12,13 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
-    "dotenv": "^17.4.2",
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "dotenv": "^18.0.8",
     "express": "^5.2.1",
     "jwt-decode": "^4.0.0",
     "pg": "^8.23.1",
@@ -31,8 +32,9 @@
     "cors": "^2.8.6",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0",
-    "prisma": "^7.8.0",
+    "prisma": "^7.10.1",
     "tsx": "^4.22.4",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^5.0.5"
   }
 }
