@@ -1,5 +1,6 @@
 import type { Community } from "./domain/community.entity";
-import type { CommunityRole, SubGroupKind } from "./domain/community.types";
+import type { CommunityWithRole } from "./database/community.repository.port";
+import type { CommunityMemberDetails, CommunityRole, SubGroupKind } from "./domain/community.types";
 import type { MessageProps } from "./domain/message.types";
 
 export interface SubGroupResponse {
@@ -14,6 +15,18 @@ export interface CommunityResponse {
   name: string;
   description: string;
   subGroups: SubGroupResponse[];
+}
+
+export interface CommunityWithRoleResponse extends CommunityResponse {
+  myRole: CommunityRole;
+}
+
+export interface CommunityMemberResponse {
+  userId: string;
+  email: string;
+  pseudo: string;
+  role: CommunityRole;
+  joinedAt: string;
 }
 
 export interface CommunityDetailsResponse extends CommunityResponse {
@@ -40,6 +53,25 @@ export function toCommunityResponse(community: Community): CommunityResponse {
       theme: subGroup.theme,
       kind: subGroup.kind,
     })),
+  };
+}
+
+/** Maps a community the caller belongs to, exposing the role the caller holds in it. */
+export function toCommunityWithRoleResponse(entry: CommunityWithRole): CommunityWithRoleResponse {
+  return {
+    ...toCommunityResponse(entry.community),
+    myRole: entry.myRole,
+  };
+}
+
+/** Maps a community member to the shape exposed to moderators over the HTTP API. */
+export function toCommunityMemberResponse(member: CommunityMemberDetails): CommunityMemberResponse {
+  return {
+    userId: member.userId,
+    email: member.email,
+    pseudo: member.pseudo,
+    role: member.role,
+    joinedAt: member.joinedAt.toISOString(),
   };
 }
 

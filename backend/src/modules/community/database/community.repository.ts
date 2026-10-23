@@ -7,9 +7,13 @@ import {
   CommunityNotFoundError,
   GeneralChannelAlreadyExistsError,
 } from "../domain/community.errors";
-import type { CommunityRole, CreateSubGroupProps } from "../domain/community.types";
+import type {
+  CommunityMemberDetails,
+  CommunityRole,
+  CreateSubGroupProps,
+} from "../domain/community.types";
 import { toEntity, toPersistence } from "./community.mapper";
-import type { CommunityRepositoryPort } from "./community.repository.port";
+import type { CommunityRepositoryPort, CommunityWithRole } from "./community.repository.port";
 
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
 const FOREIGN_KEY_VIOLATION = "P2003";
@@ -78,6 +82,18 @@ export class CommunityRepository implements CommunityRepositoryPort {
     return records.map(toEntity);
   }
 
+  async listForUserWithRole(userId: string): Promise<CommunityWithRole[]> {
+    const records = await database.communityMember.findMany({
+      where: { userId },
+      include: { community: { include: { subGroups: true } } },
+      orderBy: { community: { createdAt: "desc" } },
+    });
+    return records.map((record) => ({
+      community: toEntity(record.community),
+      myRole: record.role,
+    }));
+  }
+
   async addMember(communityId: string, userId: string): Promise<void> {
     try {
       await database.communityMember.create({
@@ -102,6 +118,50 @@ export class CommunityRepository implements CommunityRepositoryPort {
       select: { userId: true },
     });
     return members.map((member) => member.userId);
+  }
+
+  async listMembers(communityId: string): Promise<CommunityMemberDetails[]> {
+    const records = await database.communityMember.findMany({
+      where: { communityId },
+      include: { user: { select: { email: true, pseudo: true } } },
+      orderBy: { joinedAt: "asc" },
+    });
+    return records.map((record) => ({
+      userId: record.userId,
+      email: record.user.email,
+      pseudo: record.user.pseudo,
+      role: record.role,
+      joinedAt: record.joinedAt,
+    }));
+  }
+
+  async countModerators(communityId: string): Promise<number> {
+    return database.communityMember.count({
+      where: { communityId, role: "MODERATOR" },
+    });
+  }
+
+  async changeRoleAndNotify(
+    communityId: string,
+    targetUserId: string,
+    newRole: CommunityRole,
+  ): Promise<void> {
+    // The role update and its notification are written in one transaction: the member is never
+    // left with a changed role but no notification, nor a notification for a change that failed.
+    await database.$transaction([
+      database.communityMember.update({
+        where: { communityId_userId: { communityId, userId: targetUserId } },
+        data: { role: newRole },
+      }),
+      database.notification.create({
+        data: {
+          userId: targetUserId,
+          type: "ROLE_CHANGED",
+          communityId,
+          role: newRole,
+        },
+      }),
+    ]);
   }
 
   async addSubGroup(communityId: string, subGroup: CreateSubGroupProps): Promise<Community> {

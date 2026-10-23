@@ -12,7 +12,6 @@ import {
   Wrench,
   UserCog,
   UserX,
-  Users,
   Users2,
   MessagesSquare,
   ShieldCheck,
@@ -54,11 +53,6 @@ export const sidebarData: SidebarData = {
           url: '/chats',
           badge: '3',
           icon: MessagesSquare,
-        },
-        {
-          title: 'Users',
-          url: '/users',
-          icon: Users,
         },
         {
           title: 'Communautés',

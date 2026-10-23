@@ -10,6 +10,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { CommunitiesList } from './components/communities-list'
 import { CommunityCreateDialog } from './components/community-create-dialog'
 import { CommunityJoinDialog } from './components/community-join-dialog'
+import { CommunityNotifications } from './components/community-notifications'
 
 export function Communities() {
   const [createOpen, setCreateOpen] = useState(false)
@@ -20,6 +21,7 @@ export function Communities() {
       <Header fixed>
         <Search />
         <div className='ms-auto flex items-center space-x-4'>
+          <CommunityNotifications />
           <ThemeSwitch />
           <ConfigDrawer />
           <ProfileDropdown />
