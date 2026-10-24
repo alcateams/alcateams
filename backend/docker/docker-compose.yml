@@ -1,11 +1,9 @@
 name: alcateams
 
-version: '3.9'
-
 services:
   postgres:
     container_name: alcateams-postgres
-    image: postgres:alpine
+    image: postgres:18-alpine
     ports:
       - 5432:5432
     environment:
@@ -13,7 +11,7 @@ services:
       POSTGRES_PASSWORD: 'password'
       POSTGRES_DB: 'alcateams'
     volumes:
-      - alcateams-postgres:/var/lib/postgresql/data
+      - alcateams-postgres:/var/lib/postgresql
     networks:
       - postgres
 
