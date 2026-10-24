@@ -19,6 +19,13 @@ export class AlreadyMemberError extends Error {
   }
 }
 
+export class PrivateCommunityError extends Error {
+  constructor() {
+    super("Cette communauté est privée et ne peut pas être rejointe directement");
+    this.name = "PrivateCommunityError";
+  }
+}
+
 export class NotCommunityMemberError extends Error {
   constructor() {
     super("Vous devez être membre de cette communauté");

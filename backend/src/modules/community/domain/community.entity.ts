@@ -10,6 +10,7 @@ export class Community {
       id: crypto.randomUUID(),
       name: props.name,
       description: props.description,
+      isPrivate: props.isPrivate ?? false,
       subGroups: props.subGroups.map((subGroup) => ({
         id: crypto.randomUUID(),
         name: subGroup.name,
@@ -34,6 +35,10 @@ export class Community {
 
   get description(): string {
     return this.props.description;
+  }
+
+  get isPrivate(): boolean {
+    return this.props.isPrivate;
   }
 
   get subGroups(): readonly SubGroupProps[] {

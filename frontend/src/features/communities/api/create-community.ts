@@ -13,6 +13,7 @@ export const createCommunitySchema = z.object({
     .string()
     .min(1, 'Veuillez saisir une description')
     .max(500, 'La description ne peut pas dépasser 500 caractères'),
+  isPrivate: z.boolean(),
   subGroups: z
     .array(
       z.object({

@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { AlreadyMemberError, CommunityNotFoundError } from "../../domain/community.errors";
+import {
+  AlreadyMemberError,
+  CommunityNotFoundError,
+  PrivateCommunityError,
+} from "../../domain/community.errors";
 import { makeCommunity, makeCommunityRepository } from "../../testing/test-doubles";
 import { JoinCommunityUseCase } from "./join-community.use-case";
 
@@ -29,6 +33,21 @@ describe("JoinCommunityUseCase", () => {
         userId: "u1",
       }),
     ).rejects.toThrow(CommunityNotFoundError);
+    expect(sync.addMembers).not.toHaveBeenCalled();
+  });
+
+  it("does not allow users to join a private community directly", async () => {
+    const repository = makeCommunityRepository();
+    repository.findById.mockResolvedValue(makeCommunity({ isPrivate: true }));
+    const sync = makeSync();
+
+    await expect(
+      new JoinCommunityUseCase(repository, sync).execute({
+        communityId: "community-1",
+        userId: "u1",
+      }),
+    ).rejects.toThrow(PrivateCommunityError);
+    expect(repository.addMember).not.toHaveBeenCalled();
     expect(sync.addMembers).not.toHaveBeenCalled();
   });
 

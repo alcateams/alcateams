@@ -13,6 +13,7 @@ export interface CommunityResponse {
   id: string;
   name: string;
   description: string;
+  isPrivate: boolean;
   subGroups: SubGroupResponse[];
 }
 
@@ -34,6 +35,7 @@ export function toCommunityResponse(community: Community): CommunityResponse {
     id: community.id,
     name: community.name,
     description: community.description,
+    isPrivate: community.isPrivate,
     subGroups: community.subGroups.map((subGroup) => ({
       id: subGroup.id,
       name: subGroup.name,

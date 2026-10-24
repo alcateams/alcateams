@@ -1,7 +1,11 @@
 import { type Request, type Response } from "express";
 import { JoinCommunityUseCase } from "./join-community.use-case";
 import { CommunityRepository } from "../../database/community.repository";
-import { AlreadyMemberError, CommunityNotFoundError } from "../../domain/community.errors";
+import {
+  AlreadyMemberError,
+  CommunityNotFoundError,
+  PrivateCommunityError,
+} from "../../domain/community.errors";
 import { toCommunityResponse } from "../../community.response";
 import { RainbowIdentityProvider } from "../../../auth/rainbow-identity-provider.adapter";
 import { RainbowCommunityProvider } from "../../provider/rainbow-community-provider.adapter";
@@ -39,6 +43,10 @@ export const joinCommunityHandler = async (req: Request, res: Response) => {
     }
     if (error instanceof AlreadyMemberError) {
       res.status(409).json({ error: error.message });
+      return;
+    }
+    if (error instanceof PrivateCommunityError) {
+      res.status(403).json({ error: error.message });
       return;
     }
     console.error("[join-community] erreur inattendue :", error);

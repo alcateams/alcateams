@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { type Community } from '@/types/api'
-import { Check, Hash, Search as SearchIcon } from 'lucide-react'
+import { Check, Hash, LockKeyhole, Search as SearchIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { handleServerError } from '@/lib/handle-server-error'
 import { Button } from '@/components/ui/button'
@@ -155,6 +155,12 @@ function CommunityResult({
         <p className='truncate text-sm text-muted-foreground'>
           {community.description}
         </p>
+        {community.isPrivate && (
+          <p className='mt-1 flex items-center gap-1 text-xs text-muted-foreground'>
+            <LockKeyhole className='size-3' />
+            Communauté privée
+          </p>
+        )}
         {community.subGroups.length > 0 && (
           <div className='mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground'>
             {community.subGroups.map((subGroup) => (
@@ -169,6 +175,10 @@ function CommunityResult({
       {isMember ? (
         <Button variant='outline' size='sm' disabled className='shrink-0'>
           <Check /> Déjà membre
+        </Button>
+      ) : community.isPrivate ? (
+        <Button variant='outline' size='sm' disabled className='shrink-0'>
+          <LockKeyhole /> Privée
         </Button>
       ) : (
         <Button

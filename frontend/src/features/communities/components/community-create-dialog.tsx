@@ -1,6 +1,6 @@
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Trash2, Users2 } from 'lucide-react'
+import { LockKeyhole, Plus, Trash2, Users2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,12 +15,14 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
   createCommunitySchema,
@@ -36,6 +38,7 @@ type CommunityCreateDialogProps = {
 const emptyForm: CreateCommunityForm = {
   name: '',
   description: '',
+  isPrivate: false,
   subGroups: [{ name: '', theme: '' }],
 }
 
@@ -102,6 +105,32 @@ export function CommunityCreateDialog({
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='isPrivate'
+              render={({ field }) => (
+                <FormItem className='flex items-start justify-between gap-4 rounded-md border p-3'>
+                  <div className='space-y-1'>
+                    <FormLabel className='flex items-center gap-2'>
+                      <LockKeyhole className='size-4' />
+                      Communauté privée
+                    </FormLabel>
+                    <FormDescription>
+                      Elle restera visible dans la recherche, mais ne pourra pas
+                      être rejointe directement. Les demandes d'accès ne sont
+                      pas gérées ici.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label='Rendre la communauté privée'
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

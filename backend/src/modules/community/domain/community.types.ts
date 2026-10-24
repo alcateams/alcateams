@@ -17,6 +17,7 @@ export interface CommunityProps {
   id: string;
   name: string;
   description: string;
+  isPrivate: boolean;
   subGroups: SubGroupProps[];
   createdAt: Date;
   updatedAt: Date;
@@ -32,5 +33,6 @@ export interface CreateSubGroupProps {
 export interface CreateCommunityProps {
   name: string;
   description: string;
+  isPrivate?: boolean;
   subGroups: CreateSubGroupProps[];
 }

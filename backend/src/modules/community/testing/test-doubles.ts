@@ -66,11 +66,12 @@ export const makeMessageIndexer = () =>
 
 const AT = new Date("2026-10-01T00:00:00Z");
 
-export const makeCommunity = ({ withGeneral = true } = {}) =>
+export const makeCommunity = ({ withGeneral = true, isPrivate = false } = {}) =>
   new Community({
     id: "community-1",
     name: "Chess club",
     description: "All about chess",
+    isPrivate,
     subGroups: [
       ...(withGeneral
         ? [{ id: "general", name: "Général", theme: "x", kind: "GENERAL" as const }]

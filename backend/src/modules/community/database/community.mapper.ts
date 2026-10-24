@@ -11,6 +11,7 @@ export function toEntity(record: CommunityRecord): Community {
     id: record.id,
     name: record.name,
     description: record.description,
+    isPrivate: record.isPrivate,
     subGroups: record.subGroups.map((subGroup) => ({
       id: subGroup.id,
       name: subGroup.name,
@@ -31,6 +32,7 @@ export function toPersistence(community: Community) {
     id: community.id,
     name: community.name,
     description: community.description,
+    isPrivate: community.isPrivate,
     createdAt: community.createdAt,
     updatedAt: community.updatedAt,
     subGroups: {

@@ -4,6 +4,7 @@ import { GENERAL_CHANNEL, isReservedSubGroupName } from "../../domain/general-ch
 export const createCommunityDto = z.object({
   name: z.string().min(2).max(80),
   description: z.string().min(1).max(500),
+  isPrivate: z.boolean().default(false),
   subGroups: z
     .array(
       z.object({

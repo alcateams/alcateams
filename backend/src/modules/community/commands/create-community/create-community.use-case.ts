@@ -16,6 +16,7 @@ type SubGroupDraft = SubGroupInput & { kind: SubGroupKind };
 interface CreateCommunityInput {
   name: string;
   description: string;
+  isPrivate?: boolean;
   subGroups: SubGroupInput[];
   creatorId: string;
   creatorToken: string;
@@ -90,6 +91,7 @@ export class CreateCommunityUseCase {
     const community = Community.create({
       name: input.name,
       description: input.description,
+      isPrivate: input.isPrivate,
       subGroups,
     });
 

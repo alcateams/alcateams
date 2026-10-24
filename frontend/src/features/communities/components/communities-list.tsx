@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Folder, Hash, MessagesSquare } from 'lucide-react'
+import { Folder, Hash, LockKeyhole, MessagesSquare } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -46,6 +46,11 @@ export function CommunitiesList() {
                 <Folder className='size-4' /> {community.name}
               </Link>
             </CardTitle>
+            {community.isPrivate && (
+              <p className='flex items-center gap-1 text-xs text-muted-foreground'>
+                <LockKeyhole className='size-3' /> Communauté privée
+              </p>
+            )}
             <CardDescription>{community.description}</CardDescription>
           </CardHeader>
           <CardContent>

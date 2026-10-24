@@ -15,6 +15,27 @@ describe("createCommunityDto", () => {
     expect(result.success).toBe(true);
   });
 
+  it("defaults communities to public", () => {
+    const result = createCommunityDto.safeParse({
+      ...base,
+      subGroups: [{ name: "Openings", theme: "Theory" }],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.isPrivate).toBe(false);
+  });
+
+  it("accepts private communities", () => {
+    const result = createCommunityDto.safeParse({
+      ...base,
+      isPrivate: true,
+      subGroups: [{ name: "Openings", theme: "Theory" }],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.isPrivate).toBe(true);
+  });
+
   it("rejects duplicate sub-group names, case-insensitively", () => {
     const result = createCommunityDto.safeParse({
       ...base,

@@ -1,5 +1,5 @@
 import type { Community } from "../../domain/community.entity";
-import { CommunityNotFoundError } from "../../domain/community.errors";
+import { CommunityNotFoundError, PrivateCommunityError } from "../../domain/community.errors";
 import type { CommunityRepositoryPort } from "../../database/community.repository.port";
 import type { BubbleMembershipSync } from "../../services/bubble-membership";
 
@@ -23,6 +23,7 @@ export class JoinCommunityUseCase {
   async execute(input: JoinCommunityInput): Promise<Community> {
     const community = await this.communityRepository.findById(input.communityId);
     if (!community) throw new CommunityNotFoundError();
+    if (community.isPrivate) throw new PrivateCommunityError();
 
     await this.communityRepository.addMember(input.communityId, input.userId);
     await this.bubbleMembership.addMembers(

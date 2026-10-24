@@ -43,11 +43,25 @@ describe("CreateCommunityUseCase", () => {
 
     expect(provider.createBubble).toHaveBeenCalledTimes(3);
     expect(repository.save).toHaveBeenCalledWith(community, "user-1");
+    expect(community.isPrivate).toBe(false);
     expect(community.subGroups.map((s) => [s.name, s.kind, s.rainbowBubbleId])).toEqual([
       ["Général", "GENERAL", "bubble-1"],
       ["Openings", "THEMATIC", "bubble-2"],
       ["Endgames", "THEMATIC", "bubble-3"],
     ]);
+  });
+
+  it("persists the selected private visibility", async () => {
+    const repository = makeRepository();
+
+    const community = await new CreateCommunityUseCase(
+      repository,
+      makeProvider(),
+      makeAdminSession(),
+    ).execute({ ...input, isPrivate: true });
+
+    expect(community.isPrivate).toBe(true);
+    expect(repository.save).toHaveBeenCalledWith(community, "user-1");
   });
 
   it("makes the admin a moderator of every bubble, with the creator's token", async () => {
