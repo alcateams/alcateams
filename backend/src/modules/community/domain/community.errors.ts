@@ -26,6 +26,34 @@ export class NotCommunityMemberError extends Error {
   }
 }
 
+export class NotCommunityModeratorError extends Error {
+  constructor() {
+    super("Seul un modérateur de cette communauté peut effectuer cette action");
+    this.name = "NotCommunityModeratorError";
+  }
+}
+
+export class MemberNotFoundError extends Error {
+  constructor() {
+    super("Ce membre ne fait pas partie de la communauté");
+    this.name = "MemberNotFoundError";
+  }
+}
+
+export class CannotEditOwnRoleError extends Error {
+  constructor() {
+    super("Vous ne pouvez pas modifier votre propre rôle");
+    this.name = "CannotEditOwnRoleError";
+  }
+}
+
+export class LastModeratorError extends Error {
+  constructor() {
+    super("Impossible de retirer le dernier modérateur de la communauté");
+    this.name = "LastModeratorError";
+  }
+}
+
 export class SubGroupNotFoundError extends Error {
   constructor() {
     super("Ce sous-groupe est introuvable");

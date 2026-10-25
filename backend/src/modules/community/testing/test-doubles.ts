@@ -28,10 +28,14 @@ export const makeCommunityRepository = () =>
     findByName: vi.fn<CommunityRepositoryPort["findByName"]>(async () => null),
     findById: vi.fn<CommunityRepositoryPort["findById"]>(async () => null),
     listForUser: vi.fn(async () => []),
+    listForUserWithRole: vi.fn<CommunityRepositoryPort["listForUserWithRole"]>(async () => []),
     search: vi.fn(async () => []),
     addMember: vi.fn(async () => {}),
     findMemberRole: vi.fn<CommunityRepositoryPort["findMemberRole"]>(async () => "MEMBER"),
     listMemberIds: vi.fn<CommunityRepositoryPort["listMemberIds"]>(async () => []),
+    listMembers: vi.fn<CommunityRepositoryPort["listMembers"]>(async () => []),
+    countModerators: vi.fn<CommunityRepositoryPort["countModerators"]>(async () => 0),
+    changeRoleAndNotify: vi.fn<CommunityRepositoryPort["changeRoleAndNotify"]>(async () => {}),
     addSubGroup: vi.fn<CommunityRepositoryPort["addSubGroup"]>(),
   }) satisfies CommunityRepositoryPort;
 

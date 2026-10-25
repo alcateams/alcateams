@@ -1,12 +1,15 @@
-import type { Community } from "../../domain/community.entity";
-import type { CommunityRepositoryPort } from "../../database/community.repository.port";
+import type {
+  CommunityRepositoryPort,
+  CommunityWithRole,
+} from "../../database/community.repository.port";
 
 export class ListMyCommunitiesUseCase {
   constructor(private readonly communityRepository: CommunityRepositoryPort) {}
 
-  // Token validation happens upstream in the `requireAuth` middleware; this use case
-  // only lists the communities the already-authenticated user belongs to.
-  async execute(userId: string): Promise<Community[]> {
-    return this.communityRepository.listForUser(userId);
+  // Token validation happens upstream in the `requireAuth` middleware; this use case lists the
+  // communities the already-authenticated user belongs to, each paired with the user's own role
+  // so the UI can gate moderator-only actions (e.g. managing members).
+  async execute(userId: string): Promise<CommunityWithRole[]> {
+    return this.communityRepository.listForUserWithRole(userId);
   }
 }
