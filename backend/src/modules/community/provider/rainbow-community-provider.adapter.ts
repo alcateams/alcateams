@@ -8,6 +8,7 @@ import {
   BubbleCreationFailedError,
   BubbleDeletionFailedError,
   BubbleMemberAdditionFailedError,
+  BubbleMemberRemovalFailedError,
 } from "./community-provider.errors";
 import {
   RAINBOW_REQUEST_TIMEOUT_MS,
@@ -18,6 +19,7 @@ import {
 type RainbowCreatedRoomResponse = { data: { id: string } };
 
 const ROOMS_ENDPOINT = "/api/rainbow/enduser/v1.0/rooms";
+const NOT_FOUND = 404;
 const CONFLICT = 409;
 
 /**
@@ -77,6 +79,37 @@ export class RainbowCommunityProvider implements CommunityProviderPort {
     if (response.status === CONFLICT) return;
     if (!response.ok) {
       throw new BubbleMemberAdditionFailedError(await readRainbowErrorMessage(response));
+    }
+  }
+
+  /**
+   * Rainbow only deletes a membership that is no longer active, so an accepted member is first
+   * unsubscribed (as the Rainbow SDK does). Deleting it too means a later `addMember` adds them
+   * back, instead of hitting a 409 on a lingering "unsubscribed" membership.
+   */
+  async removeMember(moderatorToken: string, bubbleId: string, userId: string): Promise<void> {
+    const memberUrl = `${rainbowConfig.host}${ROOMS_ENDPOINT}/${encodeURIComponent(bubbleId)}/users/${encodeURIComponent(userId)}`;
+
+    const unsubscribed = await fetch(memberUrl, {
+      method: "PUT",
+      headers: { ...rainbowUserHeaders(moderatorToken), "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "unsubscribed" }),
+      signal: AbortSignal.timeout(RAINBOW_REQUEST_TIMEOUT_MS),
+    });
+    // Not in the bubble: nothing to do.
+    if (unsubscribed.status === NOT_FOUND) return;
+    if (!unsubscribed.ok) {
+      throw new BubbleMemberRemovalFailedError(await readRainbowErrorMessage(unsubscribed));
+    }
+
+    const deleted = await fetch(memberUrl, {
+      method: "DELETE",
+      headers: rainbowUserHeaders(moderatorToken),
+      signal: AbortSignal.timeout(RAINBOW_REQUEST_TIMEOUT_MS),
+    });
+    if (deleted.status === NOT_FOUND) return;
+    if (!deleted.ok) {
+      throw new BubbleMemberRemovalFailedError(await readRainbowErrorMessage(deleted));
     }
   }
 }

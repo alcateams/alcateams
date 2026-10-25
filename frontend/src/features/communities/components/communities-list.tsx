@@ -1,16 +1,22 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Folder, Hash, MessagesSquare } from 'lucide-react'
+import { type Community } from '@/types/api'
+import { Folder, Hash, LogOut, MessagesSquare } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { useMyCommunities } from '../api/get-my-communities'
+import { CommunityLeaveDialog } from './community-leave-dialog'
 
 export function CommunitiesList() {
   const { data: communities, isLoading, isError } = useMyCommunities()
+  const [leaving, setLeaving] = useState<Community | null>(null)
 
   if (isLoading) {
     return <p className='text-muted-foreground'>Chargement des communautés…</p>
@@ -47,6 +53,16 @@ export function CommunitiesList() {
               </Link>
             </CardTitle>
             <CardDescription>{community.description}</CardDescription>
+            <CardAction>
+              <Button
+                variant='ghost'
+                size='sm'
+                className='text-muted-foreground hover:text-destructive'
+                onClick={() => setLeaving(community)}
+              >
+                <LogOut /> Quitter
+              </Button>
+            </CardAction>
           </CardHeader>
           <CardContent>
             {/* Arborescence: the community's sub-groups shown as child nodes. */}
@@ -74,6 +90,13 @@ export function CommunitiesList() {
           </CardContent>
         </Card>
       ))}
+
+      <CommunityLeaveDialog
+        community={leaving}
+        onOpenChange={(open) => {
+          if (!open) setLeaving(null)
+        }}
+      />
     </div>
   )
 }

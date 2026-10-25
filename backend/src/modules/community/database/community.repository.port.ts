@@ -14,6 +14,9 @@ export interface CommunityRepositoryPort {
   /** Returns the user's role in the community, or `null` if they are not a member. */
   findMemberRole(communityId: string, userId: string): Promise<CommunityRole | null>;
   listMemberIds(communityId: string): Promise<string[]>;
+  countModerators(communityId: string): Promise<number>;
+  /** Removes the user from the community. Throws `NotCommunityMemberError` if not a member. */
+  removeMember(communityId: string, userId: string): Promise<void>;
   /**
    * Adds a sub-group to an existing community. Throws `GeneralChannelAlreadyExistsError` if a
    * concurrent request already created the community's general channel.

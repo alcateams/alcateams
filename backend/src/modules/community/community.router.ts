@@ -3,6 +3,7 @@ import { RainbowIdentityProvider } from "../auth/rainbow-identity-provider.adapt
 import { requireAuth } from "../auth/require-auth.middleware";
 import { createCommunityHandler } from "./commands/create-community/create-community.http.controller";
 import { joinCommunityHandler } from "./commands/join-community/join-community.http.controller";
+import { leaveCommunityHandler } from "./commands/leave-community/leave-community.http.controller";
 import { sendMessageHandler } from "./commands/send-message/send-message.http.controller";
 import { getCommunityHandler } from "./queries/get-community/get-community.http.controller";
 import { listMessagesHandler } from "./queries/list-messages/list-messages.http.controller";
@@ -18,6 +19,7 @@ communityRouter.post("/", requireAuth(identityProvider), createCommunityHandler)
 communityRouter.get("/me", requireAuth(identityProvider), listMyCommunitiesHandler);
 communityRouter.get("/search", requireAuth(identityProvider), searchCommunitiesHandler);
 communityRouter.post("/:id/join", requireAuth(identityProvider), joinCommunityHandler);
+communityRouter.post("/:id/leave", requireAuth(identityProvider), leaveCommunityHandler);
 communityRouter.get("/:id", requireAuth(identityProvider), getCommunityHandler);
 communityRouter.get(
   "/:id/subgroups/:subGroupId/messages",

@@ -26,6 +26,15 @@ export class NotCommunityMemberError extends Error {
   }
 }
 
+export class LastModeratorError extends Error {
+  constructor() {
+    super(
+      "Vous êtes le seul modérateur de cette communauté : nommez un autre modérateur avant de la quitter",
+    );
+    this.name = "LastModeratorError";
+  }
+}
+
 export class SubGroupNotFoundError extends Error {
   constructor() {
     super("Ce sous-groupe est introuvable");

@@ -19,6 +19,7 @@ export const makeCommunityProvider = () => {
     createBubble: vi.fn<CommunityProviderPort["createBubble"]>(async () => `bubble-${++counter}`),
     deleteBubble: vi.fn<CommunityProviderPort["deleteBubble"]>(async () => {}),
     addMember: vi.fn<CommunityProviderPort["addMember"]>(async () => {}),
+    removeMember: vi.fn<CommunityProviderPort["removeMember"]>(async () => {}),
   } satisfies CommunityProviderPort;
 };
 
@@ -32,6 +33,8 @@ export const makeCommunityRepository = () =>
     addMember: vi.fn(async () => {}),
     findMemberRole: vi.fn<CommunityRepositoryPort["findMemberRole"]>(async () => "MEMBER"),
     listMemberIds: vi.fn<CommunityRepositoryPort["listMemberIds"]>(async () => []),
+    countModerators: vi.fn<CommunityRepositoryPort["countModerators"]>(async () => 1),
+    removeMember: vi.fn<CommunityRepositoryPort["removeMember"]>(async () => {}),
     addSubGroup: vi.fn<CommunityRepositoryPort["addSubGroup"]>(),
   }) satisfies CommunityRepositoryPort;
 
