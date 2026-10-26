@@ -1,6 +1,8 @@
 import type { Community } from "./domain/community.entity";
 import type { CommunityRole, SubGroupKind } from "./domain/community.types";
 import type { MessageProps } from "./domain/message.types";
+import type { SnippetPart } from "./provider/message-search.port";
+import type { MessageSearchPage } from "./queries/search-messages/search-messages.use-case";
 
 export interface SubGroupResponse {
   id: string;
@@ -56,5 +58,35 @@ export function toMessageResponse(message: MessageProps): MessageResponse {
     text: message.text,
     author: { id: message.authorId, pseudo: message.authorPseudo },
     createdAt: message.createdAt.toISOString(),
+  };
+}
+
+export interface MessageSearchResultResponse {
+  id: string;
+  snippet: SnippetPart[];
+  author: { id: string; pseudo: string };
+  community: { id: string; name: string };
+  subGroup: { id: string; name: string };
+  createdAt: string;
+}
+
+export interface MessageSearchPageResponse {
+  results: MessageSearchResultResponse[];
+  total: number;
+  nextOffset: number | null;
+}
+
+export function toMessageSearchPageResponse(page: MessageSearchPage): MessageSearchPageResponse {
+  return {
+    results: page.results.map((result) => ({
+      id: result.id,
+      snippet: result.snippet,
+      author: { id: result.authorId, pseudo: result.authorPseudo },
+      community: { id: result.communityId, name: result.communityName },
+      subGroup: { id: result.subGroupId, name: result.subGroupName },
+      createdAt: result.createdAt.toISOString(),
+    })),
+    total: page.total,
+    nextOffset: page.nextOffset,
   };
 }

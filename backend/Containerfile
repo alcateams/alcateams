@@ -1,29 +1,30 @@
-FROM oven/bun:1-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN bun install --frozen-lockfile
+RUN npm ci
 
 COPY . .
 
-RUN bunx prisma generate
-RUN bun lint # check for errors
-RUN bun tsc --noEmit # type check
-RUN bun build ./src/index.ts --outdir ./dist --target=bun
+RUN npx prisma generate
+RUN npm run lint # check for errors
+RUN npm run typecheck
+RUN npm run build
 
-FROM oven/bun:1-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package.json package-lock.json ./
 
-RUN bun install --frozen-lockfile --production
+# The Prisma client is generated at build time and bundled into dist: skip install scripts.
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-CMD ["bun", "run", "dist/index.js"]
+USER node
+CMD ["node", "--enable-source-maps", "dist/index.js"]

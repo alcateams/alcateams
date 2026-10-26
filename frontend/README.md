@@ -10,7 +10,7 @@
 
 **Type Checking:** [TypeScript](https://www.typescriptlang.org/)
 
-**Linting/Formatting:** [ESLint](https://eslint.org/) & [Prettier](https://prettier.io/)
+**Linting/Formatting:** [Oxlint](https://oxc.rs/docs/guide/usage/linter) & [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)
 
 **Icons:** [Lucide Icons](https://lucide.dev/icons/), [Tabler Icons](https://tabler.io/icons) (Brand icons only)
 

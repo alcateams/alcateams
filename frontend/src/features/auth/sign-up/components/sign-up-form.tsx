@@ -1,9 +1,8 @@
-import { useRouter } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-
-import { cn } from '@/lib/utils'
+import { useRouter } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -15,7 +14,11 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-import { useRegister, registerInputSchema, type RegisterInput } from '@/features/auth/api/register'
+import {
+  useRegister,
+  registerInputSchema,
+  type RegisterInput,
+} from '@/features/auth/api/register'
 
 export function SignUpForm({
   className,

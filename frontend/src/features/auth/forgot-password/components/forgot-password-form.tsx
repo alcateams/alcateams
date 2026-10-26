@@ -37,7 +37,7 @@ export function ForgotPasswordForm({
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.log(data)
 
     toast.promise(sleep(2000), {

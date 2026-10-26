@@ -15,7 +15,11 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-import { useLogin, loginInputSchema, type LoginInput } from '@/features/auth/api/login'
+import {
+  useLogin,
+  loginInputSchema,
+  type LoginInput,
+} from '@/features/auth/api/login'
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
   redirectTo?: string
